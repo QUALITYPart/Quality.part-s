@@ -1146,9 +1146,25 @@ notify pgrst, 'reload schema';</pre>
           return msg.includes(column) && (msg.includes("column") || msg.includes("schema cache"));
         }
         let customFieldsMigrationNoticeShown = false;
-        function notifyCustomFieldsMigrationNeeded() {
+        // `detail` (optional) is the raw Postgres/PostgREST error we caught right
+        // before assuming it meant "column missing" — shown in the warning box so
+        // it's possible to tell a genuinely-missing column apart from something
+        // else (like a permissions error) that happens to mention "column" too.
+        function notifyCustomFieldsMigrationNeeded(detail) {
           const hint = document.getElementById("customFieldsMigrationHint");
-          if (hint) hint.style.display = "block";
+          if (hint) {
+            hint.style.display = "block";
+            if (detail) {
+              let detailEl = hint.querySelector(".mw-detail");
+              if (!detailEl) {
+                detailEl = document.createElement("div");
+                detailEl.className = "mw-detail";
+                detailEl.style.cssText = "margin-top:8px;font-size:.72rem;color:var(--muted);direction:ltr;text-align:left;";
+                hint.appendChild(detailEl);
+              }
+              detailEl.textContent = `Technical detail (send this to support if the SQL fix doesn't help): ${detail}`;
+            }
+          }
           if (customFieldsMigrationNoticeShown) return;
           customFieldsMigrationNoticeShown = true;
           showToast("Custom fields need a quick one-time database update — see Admin ▸ Custom Fields.", true);
@@ -1161,13 +1177,14 @@ notify pgrst, 'reload schema';</pre>
         async function checkCustomFieldsColumnSupport() {
           try {
             const { error } = await sb.from("options").select("custom_fields").limit(1);
-            if (error && isMissingColumnError(error, "custom_fields")) { notifyCustomFieldsMigrationNeeded(); return; }
+            if (error && isMissingColumnError(error, "custom_fields")) { notifyCustomFieldsMigrationNeeded(`${error.code || "?"} ${error.message || ""}`.trim()); return; }
           } catch (e) { /* ignore — network/other errors are handled elsewhere */ }
           try {
             const { error } = await sb.from("parts").select("custom_fields").limit(1);
-            if (error && isMissingColumnError(error, "custom_fields")) { notifyCustomFieldsMigrationNeeded(); }
+            if (error && isMissingColumnError(error, "custom_fields")) { notifyCustomFieldsMigrationNeeded(`${error.code || "?"} ${error.message || ""}`.trim()); }
           } catch (e) { /* ignore */ }
         }
+
         // Offline fallback: cache the last successful fetch locally so the app can
         // still show inventory if the connection to the database drops.
         const OFFLINE_INVENTORY_KEY = "qpx-offline-inventory";
@@ -1232,9 +1249,14 @@ notify pgrst, 'reload schema';</pre>
           };
           let { error } = await sb.from("options").update(payload).eq("id", 1);
           if (error && isMissingColumnError(error, "custom_fields")) {
+            const firstError = error;
             delete payload.custom_fields;
             ({ error } = await sb.from("options").update(payload).eq("id", 1));
-            if (!error) { notifyCustomFieldsMigrationNeeded(); return false; }
+            if (!error) {
+              console.error("custom_fields save was blocked — raw error:", firstError);
+              notifyCustomFieldsMigrationNeeded(`${firstError.code || "?"} ${firstError.message || ""}`.trim());
+              return false;
+            }
           }
           if (error) { showToast("Failed to save options to the database.", true); console.error(error); return false; }
           return true;
@@ -1243,9 +1265,13 @@ notify pgrst, 'reload schema';</pre>
           const row = { id: part.id, ...partToRow(part), created_at: part.createdAt };
           let { error } = await sb.from("parts").insert(row);
           if (error && isMissingColumnError(error, "custom_fields")) {
+            const firstError = error;
             delete row.custom_fields;
             ({ error } = await sb.from("parts").insert(row));
-            if (!error) notifyCustomFieldsMigrationNeeded();
+            if (!error) {
+              console.error("custom_fields save was blocked — raw error:", firstError);
+              notifyCustomFieldsMigrationNeeded(`${firstError.code || "?"} ${firstError.message || ""}`.trim());
+            }
           }
           if (error) { showToast("Failed to save the part to the database.", true); console.error(error); return false; }
           return true;
@@ -1254,9 +1280,13 @@ notify pgrst, 'reload schema';</pre>
           const row = partToRow(values);
           let { error } = await sb.from("parts").update(row).eq("id", id);
           if (error && isMissingColumnError(error, "custom_fields")) {
+            const firstError = error;
             delete row.custom_fields;
             ({ error } = await sb.from("parts").update(row).eq("id", id));
-            if (!error) notifyCustomFieldsMigrationNeeded();
+            if (!error) {
+              console.error("custom_fields save was blocked — raw error:", firstError);
+              notifyCustomFieldsMigrationNeeded(`${firstError.code || "?"} ${firstError.message || ""}`.trim());
+            }
           }
           if (error) { showToast("Failed to update the part in the database.", true); console.error(error); return false; }
           return true;
