@@ -1146,11 +1146,17 @@ notify pgrst, 'reload schema';</pre>
           return msg.includes(column) && (msg.includes("column") || msg.includes("schema cache"));
         }
         let customFieldsMigrationNoticeShown = false;
+        // Holds the exact raw error text from the most recent blocked save, so
+        // it can be shown directly in the toast the user actually sees — the
+        // yellow info box may have been removed from this build, so nothing
+        // should depend on that box existing.
+        let lastCustomFieldsMigrationDetail = "";
         // `detail` (optional) is the raw Postgres/PostgREST error we caught right
         // before assuming it meant "column missing" — shown in the warning box so
         // it's possible to tell a genuinely-missing column apart from something
         // else (like a permissions error) that happens to mention "column" too.
         function notifyCustomFieldsMigrationNeeded(detail) {
+          lastCustomFieldsMigrationDetail = detail || "";
           const hint = document.getElementById("customFieldsMigrationHint");
           if (hint) {
             hint.style.display = "block";
@@ -1485,7 +1491,9 @@ notify pgrst, 'reload schema';</pre>
           toast.classList.toggle("error", isError);
           toast.classList.add("show");
           clearTimeout(showToast.timeout);
-          showToast.timeout = setTimeout(() => toast.classList.remove("show"), 2600);
+          // Error toasts (like a raw database diagnostic message) get more time
+          // on screen so there's a real chance to read and screenshot them.
+          showToast.timeout = setTimeout(() => toast.classList.remove("show"), isError ? 7000 : 2600);
         }
 
         // ===== Page navigation =====
@@ -1770,7 +1778,8 @@ notify pgrst, 'reload schema';</pre>
           if (persisted || !field.startsWith("custom:")) {
             showToast(`Added "${val}".`);
           } else {
-            showToast(`"${val}" was added here, but it will disappear on refresh until the database is updated — see the warning in Admin ▸ Custom Fields.`, true);
+            const detailSuffix = lastCustomFieldsMigrationDetail ? ` [${lastCustomFieldsMigrationDetail}]` : "";
+            showToast(`"${val}" was added here, but it will disappear on refresh until the database is updated.${detailSuffix}`, true);
           }
         });
         $("#newOptionInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("#addOptionBtn").click(); } });
@@ -1826,7 +1835,8 @@ notify pgrst, 'reload schema';</pre>
           if (persisted) {
             showToast(`Added field "${label}".`);
           } else {
-            showToast(`"${label}" was added here, but the database can't save it yet — it will disappear on refresh. See the warning below.`, true);
+            const detailSuffix = lastCustomFieldsMigrationDetail ? ` Technical detail: ${lastCustomFieldsMigrationDetail}` : "";
+            showToast(`"${label}" was added here, but the database can't save it yet — it will disappear on refresh.${detailSuffix}`, true);
             const hint = $("#customFieldsMigrationHint");
             if (hint) { hint.scrollIntoView({ behavior: "smooth", block: "center" }); hint.classList.add("attention"); setTimeout(() => hint.classList.remove("attention"), 2400); }
           }
