@@ -147,6 +147,8 @@
       .field label { font-size: .78rem; font-weight: 700; color: var(--muted-strong); }
       .field .hint { font-size: .68rem; color: var(--muted); }
       .migration-warning { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: rgba(247,201,105,.12); border: 1px solid rgba(247,201,105,.4); color: var(--text); font-size: .8rem; line-height: 1.6; }
+      .migration-warning.attention { animation: mw-pulse 0.6s ease 2; }
+      @keyframes mw-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(247,201,105,0); } 50% { box-shadow: 0 0 0 6px rgba(247,201,105,.25); } }
       .migration-warning .mw-title { color: var(--warning); font-weight: 800; display: block; margin-bottom: 4px; }
       .migration-warning pre { margin: 10px 0 0; padding: 10px 12px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; font-size: .72rem; white-space: pre-wrap; word-break: break-word; direction: ltr; text-align: left; color: var(--text); overflow-x: auto; }
       .migration-warning .mw-actions { margin-top: 10px; }
@@ -1232,9 +1234,10 @@ notify pgrst, 'reload schema';</pre>
           if (error && isMissingColumnError(error, "custom_fields")) {
             delete payload.custom_fields;
             ({ error } = await sb.from("options").update(payload).eq("id", 1));
-            if (!error) notifyCustomFieldsMigrationNeeded();
+            if (!error) { notifyCustomFieldsMigrationNeeded(); return false; }
           }
-          if (error) { showToast("Failed to save options to the database.", true); console.error(error); }
+          if (error) { showToast("Failed to save options to the database.", true); console.error(error); return false; }
+          return true;
         }
         async function insertPart(part) {
           const row = { id: part.id, ...partToRow(part), created_at: part.createdAt };
@@ -1731,10 +1734,14 @@ notify pgrst, 'reload schema';</pre>
           if (list.some((o) => o.toLowerCase() === val.toLowerCase())) { showToast("This option already exists.", true); return; }
           list.push(val);
           setOptionList(field, parentValue, list);
-          await saveOptions();
+          const persisted = await saveOptions();
           $("#newOptionInput").value = "";
           renderOptionsManager(); refreshOptionDependents();
-          showToast(`Added "${val}".`);
+          if (persisted || !field.startsWith("custom:")) {
+            showToast(`Added "${val}".`);
+          } else {
+            showToast(`"${val}" was added here, but it will disappear on refresh until the database is updated — see the warning in Admin ▸ Custom Fields.`, true);
+          }
         });
         $("#newOptionInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("#addOptionBtn").click(); } });
 
@@ -1781,12 +1788,18 @@ notify pgrst, 'reload schema';</pre>
           state.options.customFieldDefs.push({ id, label, type, dependsOn });
           if (!state.options.customFieldOptions) state.options.customFieldOptions = {};
           state.options.customFieldOptions[id] = {};
-          await saveOptions();
+          const persisted = await saveOptions();
           $("#newFieldLabel").value = "";
           $("#newFieldType").value = "text";
           $("#newFieldDependsWrap").style.display = "none";
           renderCustomFieldDefsList(); populateOptionFieldSelect(); renderCustomFieldsForm();
-          showToast(`Added field "${label}".`);
+          if (persisted) {
+            showToast(`Added field "${label}".`);
+          } else {
+            showToast(`"${label}" was added here, but the database can't save it yet — it will disappear on refresh. See the warning below.`, true);
+            const hint = $("#customFieldsMigrationHint");
+            if (hint) { hint.scrollIntoView({ behavior: "smooth", block: "center" }); hint.classList.add("attention"); setTimeout(() => hint.classList.remove("attention"), 2400); }
+          }
         });
         $("#copyMigrationSqlBtn").addEventListener("click", async () => {
           const sql = $("#customFieldsMigrationSql").textContent;
