@@ -94,6 +94,11 @@
       .section-caption { color: var(--muted); font-size: 0.84rem; margin: 0 0 18px; }
 
       .panel { border: 1px solid var(--border); background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(14px); margin-bottom: 18px; }
+      /* backdrop-filter above makes every .panel its own stacking context, which
+         normally traps an open dropdown's z-index inside that one panel — the
+         next panel down would still paint over it. While a dropdown inside a
+         panel is open, this class lifts that whole panel above its siblings. */
+      .panel.combo-elevated { position: relative; z-index: 200; }
       .panel-header { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 18px 20px 15px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
       .panel-title { margin: 0; font-size: 1rem; letter-spacing: -.02em; }
       .panel-caption { color: var(--muted); font-size: .74rem; margin-top: 3px; }
@@ -141,6 +146,10 @@
       .field.span-2 { grid-column: span 2; }
       .field label { font-size: .78rem; font-weight: 700; color: var(--muted-strong); }
       .field .hint { font-size: .68rem; color: var(--muted); }
+      .migration-warning { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: rgba(247,201,105,.12); border: 1px solid rgba(247,201,105,.4); color: var(--text); font-size: .8rem; line-height: 1.6; }
+      .migration-warning .mw-title { color: var(--warning); font-weight: 800; display: block; margin-bottom: 4px; }
+      .migration-warning pre { margin: 10px 0 0; padding: 10px 12px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; font-size: .72rem; white-space: pre-wrap; word-break: break-word; direction: ltr; text-align: left; color: var(--text); overflow-x: auto; }
+      .migration-warning .mw-actions { margin-top: 10px; }
       input[type=text], input[type=number], input[type=date], input[type=search], select, textarea {
         border: 1px solid var(--border); border-radius: 12px; background: var(--bg-soft); color: var(--text);
         padding: 11px 12px; width: 100%;
@@ -177,7 +186,7 @@
       /* ===== Search ===== */
       .search-wrap { position: relative; }
       .search-wrap .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
-      .search-input { padding-left: 40px !important; padding-right: 38px !important; height: 46px; }
+      .search-input { padding-left: 40px !important; padding-right: 38px !important; height: 46px !important; -webkit-appearance: none; appearance: none; box-sizing: border-box; font-size: .92rem; }
       .clear-search { display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: var(--muted); font-size: 1.2rem; }
       .clear-search.visible { display: block; }
 
@@ -216,8 +225,7 @@
       .results-bento { display: grid; grid-template-columns: 1fr; gap: 16px; }
       @media (min-width: 900px) {
         .results-bento { grid-template-columns: repeat(12, 1fr); }
-        .result-card-featured { grid-column: span 8; }
-        .stat-tile { grid-column: span 4; }
+        .result-card-featured { grid-column: span 12; }
         .result-card-compact { grid-column: span 6; }
       }
       .result-card-featured {
@@ -242,18 +250,6 @@
       .rcf-location { color: var(--muted); font-size: .72rem; font-weight: 700; }
       .rcf-view { min-height: 38px; padding: 0 16px; border-radius: 10px; font-size: .78rem; }
 
-      .stat-tile {
-        border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 16px;
-        background: linear-gradient(150deg, #101826, #182338); color: #f4f7fb; box-shadow: var(--shadow); position: relative; overflow: hidden; border: 1px solid var(--border);
-      }
-      :root[data-theme="light"] .stat-tile { background: linear-gradient(150deg, #172338, #23324a); }
-      .stat-tile::after { content: ""; position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(66,201,143,.35), transparent 70%); }
-      .stat-tile-label { font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #93a2b8; position: relative; }
-      .stat-tile-value { font-size: 2.1rem; font-weight: 850; margin-top: 6px; letter-spacing: -.03em; position: relative; }
-      .stat-tile-note { font-size: .76rem; color: var(--accent); margin-top: 4px; position: relative; }
-      .stat-tile-btn { border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #f4f7fb; border-radius: 10px; padding: 10px 14px; font-size: .78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; }
-      .stat-tile-btn:hover { background: rgba(255,255,255,.12); }
-
       .result-card-compact {
         border: 1px solid var(--border); background: var(--panel); border-radius: var(--radius); overflow: hidden;
         box-shadow: var(--shadow); display: flex; flex-direction: column; transition: 140ms ease;
@@ -262,14 +258,21 @@
       .rcc-media { position: relative; height: 150px; background: var(--bg-soft); cursor: zoom-in; }
       .rcc-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
       .rcc-media .ph-icon-lg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2rem; opacity: .45; }
-      .rcc-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
-      .rcc-title { margin: 0; font-size: .95rem; font-weight: 800; }
-      .rcc-desc { margin: 0; font-size: .78rem; color: var(--muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.2em; }
-      .rcc-footer { margin-top: auto; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; }
-      .rcc-qty { font-size: .72rem; font-weight: 800; padding: 4px 9px; border-radius: 999px; background: rgba(66,201,143,.14); color: var(--accent-strong); }
+      .rcc-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+      .rcc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+      .rcc-title { margin: 0; font-size: .95rem; font-weight: 800; min-width: 0; }
+      .rcc-type { flex-shrink: 0; font-size: .64rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--bg-soft); border: 1px solid var(--border); color: var(--muted-strong); white-space: nowrap; }
+      .rcc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+      .rcc-info-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+      .rcc-info-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+      .rcc-info-value { font-size: .8rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .rcc-footer { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .rcc-qty { font-size: .72rem; font-weight: 800; padding: 4px 9px; border-radius: 999px; background: rgba(66,201,143,.14); color: var(--accent-strong); flex-shrink: 0; }
       .rcc-qty.low { background: rgba(247,201,105,.18); color: var(--warning); }
       .rcc-qty.empty { background: rgba(255,127,145,.18); color: var(--danger); }
-      .rcc-add { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--muted-strong); flex-shrink: 0; }
+      .rcc-note { flex: 1; min-width: 0; font-size: .72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+      .rcc-edit { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-strong); background: transparent; display: flex; align-items: center; justify-content: center; font-size: .82rem; color: var(--muted-strong); flex-shrink: 0; transition: 140ms ease; }
+      .rcc-edit:hover { color: var(--accent-strong); border-color: var(--accent); background: rgba(66,201,143,.1); }
 
       /* ===== Tables / lists ===== */
       .table-wrap { overflow-x: auto; }
@@ -678,7 +681,7 @@
                 <button class="clear-search" id="partsClearSearch" type="button">×</button>
               </div>
               <div style="margin-top:10px">
-                <button class="ghost-button" type="button" id="partsScanBtn">📷 Search by Barcode</button>
+                <button class="ghost-button full-width" type="button" id="partsScanBtn" style="height:46px">📷 Search by Barcode</button>
               </div>
             </div>
           </div>
@@ -802,8 +805,15 @@
               <div class="form-actions">
                 <button class="primary-button" type="button" id="addCustomFieldBtn">Add Field</button>
               </div>
-              <div class="hint" id="customFieldsMigrationHint" style="margin-top:10px; display:none;">
-                ⚠️ Your database is missing the <code>custom_fields</code> column, so field values can't be saved yet. In Supabase, run this once in the SQL editor: <code>alter table parts add column custom_fields jsonb default '{}'::jsonb; alter table options add column custom_fields jsonb default '{}'::jsonb;</code>
+              <div class="migration-warning" id="customFieldsMigrationHint" style="display:none;">
+                <span class="mw-title">⚠️ One-time database update needed</span>
+                Your Supabase database is missing the <code>custom_fields</code> column, so custom field values only stay on this device/session and don't reach other devices. Open your Supabase project → <strong>SQL Editor</strong> → run this once (safe to run more than once):
+                <pre id="customFieldsMigrationSql">alter table parts add column if not exists custom_fields jsonb default '{}'::jsonb;
+alter table options add column if not exists custom_fields jsonb default '{}'::jsonb;
+notify pgrst, 'reload schema';</pre>
+                <div class="mw-actions">
+                  <button type="button" class="secondary-button" id="copyMigrationSqlBtn">📋 Copy SQL</button>
+                </div>
               </div>
             </div>
           </div>
@@ -999,6 +1009,12 @@
           for (let i = 0; i < 31; i++) arr.push(String(y - i));
           return arr;
         }
+        // Always show the Year dropdown starting with the current year and
+        // counting down, regardless of the order the years happen to be
+        // stored in (older saved data may still be oldest-first).
+        function sortedYears(list) {
+          return [...list].sort((a, b) => Number(b) - Number(a));
+        }
 
         const DEFAULT_OPTIONS = {
           vehicle: [
@@ -1019,6 +1035,67 @@
           model: {}, // { [vehicleName]: string[] } — models are scoped to the chosen vehicle make
           year: defaultYears(),
         };
+
+        // A starter list of common models for each default vehicle make, used to
+        // pre-fill the Model dropdown so it isn't empty on first use. Anything
+        // missing can still be added later from Admin → Field Options — this only
+        // ever adds models, it never removes or overwrites ones already saved.
+        const MODEL_SEED = {
+          "Toyota": ["Corolla", "Corolla Cross", "Camry", "Yaris", "Yaris Cross", "RAV4", "Highlander", "Land Cruiser", "Land Cruiser Prado", "Fortuner", "Hilux", "Tacoma", "Tundra", "4Runner", "Sequoia", "Avalon", "Prius", "C-HR", "Venza", "Sienna", "Avanza", "Innova", "Rush", "Supra", "GR86", "FJ Cruiser"],
+          "Honda": ["Civic", "Civic Type R", "Accord", "City", "Jazz / Fit", "CR-V", "HR-V", "BR-V", "Pilot", "Passport", "Odyssey", "Ridgeline", "Insight"],
+          "Nissan": ["Altima", "Sentra", "Sunny", "Versa", "Maxima", "Kicks", "Juke", "Qashqai", "X-Trail", "Rogue", "Murano", "Pathfinder", "Armada", "Patrol", "Navara", "Frontier", "Titan", "GT-R", "370Z", "Z", "Micra"],
+          "Mercedes-Benz": ["A-Class", "B-Class", "C-Class", "E-Class", "S-Class", "CLA", "CLS", "GLA", "GLB", "GLC", "GLE", "GLS", "G-Class", "Sprinter", "Vito", "AMG GT", "EQC", "EQE", "EQS"],
+          "BMW": ["1 Series", "2 Series", "3 Series", "4 Series", "5 Series", "6 Series", "7 Series", "8 Series", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "Z4", "M3", "M4", "M5", "i3", "i4", "iX"],
+          "Audi": ["A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q2", "Q3", "Q5", "Q7", "Q8", "TT", "R8", "e-tron", "RS3", "RS6"],
+          "Volkswagen": ["Golf", "Polo", "Passat", "Jetta", "Tiguan", "Touareg", "Atlas", "T-Roc", "T-Cross", "ID.4", "Arteon", "Beetle", "Caddy", "Transporter"],
+          "Ford": ["Focus", "Fiesta", "Fusion", "Mustang", "Explorer", "Escape", "Edge", "Expedition", "F-150", "Ranger", "EcoSport", "Territory", "Everest", "Taurus", "Bronco"],
+          "Chevrolet": ["Cruze", "Malibu", "Impala", "Spark", "Aveo", "Sonic", "Camaro", "Corvette", "Equinox", "Traverse", "Tahoe", "Suburban", "Silverado", "Trailblazer", "Captiva", "Optra", "Blazer"],
+          "GMC": ["Sierra", "Yukon", "Acadia", "Terrain", "Canyon", "Savana"],
+          "Hyundai": ["Elantra", "Accent", "Sonata", "Azera", "i10", "i20", "i30", "Tucson", "Santa Fe", "Kona", "Creta", "Palisade", "Venue", "Veloster", "Staria", "H1"],
+          "Kia": ["Rio", "Cerato / Forte", "Optima / K5", "Picanto", "Soul", "Sportage", "Sorento", "Telluride", "Seltos", "Stonic", "Carnival", "Niro", "Stinger"],
+          "Mazda": ["Mazda2", "Mazda3", "Mazda6", "CX-3", "CX-30", "CX-5", "CX-9", "CX-50", "MX-5 Miata", "BT-50"],
+          "Mitsubishi": ["Lancer", "Mirage", "Attrage", "ASX", "Eclipse Cross", "Outlander", "Pajero", "Pajero Sport", "L200 / Triton", "Xpander"],
+          "Suzuki": ["Swift", "Baleno", "Dzire", "Ciaz", "Alto", "Celerio", "Vitara", "Grand Vitara", "S-Cross", "Jimny", "Ertiga", "APV"],
+          "Lexus": ["IS", "ES", "GS", "LS", "RC", "LC", "UX", "NX", "RX", "GX", "LX"],
+          "Infiniti": ["Q50", "Q60", "Q70", "QX50", "QX55", "QX60", "QX70", "QX80"],
+          "Jeep": ["Wrangler", "Cherokee", "Grand Cherokee", "Compass", "Renegade", "Gladiator", "Patriot"],
+          "Ram": ["1500", "2500", "3500", "ProMaster"],
+          "Dodge": ["Charger", "Challenger", "Durango", "Journey", "Grand Caravan"],
+          "Chrysler": ["300", "Pacifica", "Voyager", "200"],
+          "Land Rover": ["Range Rover", "Range Rover Sport", "Range Rover Evoque", "Range Rover Velar", "Discovery", "Discovery Sport", "Defender"],
+          "Jaguar": ["XE", "XF", "XJ", "F-Type", "F-Pace", "E-Pace", "I-Pace"],
+          "Volvo": ["S60", "S90", "V60", "V90", "XC40", "XC60", "XC90"],
+          "Porsche": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "Boxster", "Cayman"],
+          "Subaru": ["Impreza", "Legacy", "Outback", "Forester", "XV / Crosstrek", "WRX", "BRZ", "Ascent"],
+          "Peugeot": ["208", "301", "2008", "3008", "5008", "508", "408", "Partner"],
+          "Renault": ["Clio", "Logan", "Sandero", "Megane", "Duster", "Kadjar", "Koleos", "Captur", "Symbol / Talisman"],
+          "Citroën": ["C3", "C4", "C5", "Berlingo", "C-Elysée"],
+          "Fiat": ["Punto", "Tipo", "500", "Panda", "Doblo", "Linea"],
+          "Isuzu": ["D-Max", "MU-X", "N-Series"],
+          "MG": ["MG3", "MG5", "MG6", "ZS", "HS", "RX5", "RX8", "GT"],
+          "Genesis": ["G70", "G80", "G90", "GV70", "GV80"],
+          "Tesla": ["Model S", "Model 3", "Model X", "Model Y", "Cybertruck"],
+          "MINI": ["Cooper", "Cooper S", "Countryman", "Clubman", "Paceman"],
+          "Škoda": ["Fabia", "Octavia", "Superb", "Kodiaq", "Karoq", "Kamiq", "Rapid"],
+          "SEAT": ["Ibiza", "Leon", "Ateca", "Arona", "Tarraco"],
+          "Opel": ["Corsa", "Astra", "Insignia", "Mokka", "Grandland"],
+          "Chery": ["Tiggo 2", "Tiggo 3", "Tiggo 4", "Tiggo 5", "Tiggo 7", "Tiggo 8", "Arrizo 5", "Arrizo 6", "QQ"],
+          "Geely": ["Emgrand", "Coolray", "Azkarra", "Tugella", "Okavango", "Monjaro"],
+          "BYD": ["F3", "Song", "Tang", "Han", "Atto 3", "Dolphin", "Seal", "Qin", "Yuan"],
+        };
+        // Adds any starter models the current options don't already have — never
+        // removes or overwrites a model that's already saved (admin-added or
+        // custom ones are always kept as-is).
+        function seedMissingModels() {
+          let changed = false;
+          Object.keys(MODEL_SEED).forEach((vehicle) => {
+            if (!state.options.vehicle.includes(vehicle)) return;
+            if (!state.options.model[vehicle]) { state.options.model[vehicle] = []; changed = true; }
+            const existing = state.options.model[vehicle];
+            MODEL_SEED[vehicle].forEach((m) => { if (!existing.includes(m)) { existing.push(m); changed = true; } });
+          });
+          return changed;
+        }
 
         const state = {
           inventory: [],
@@ -1060,16 +1137,34 @@
         // These helpers detect that specific failure and retry without it, so the
         // rest of the app keeps working until the column is added.
         function isMissingColumnError(error, column) {
-          const msg = `${(error && error.message) || ""} ${(error && error.details) || ""} ${(error && error.hint) || ""}`.toLowerCase();
+          if (!error) return false;
+          // PGRST204 = PostgREST "column not found in schema cache"; 42703 = Postgres "undefined_column".
+          if (error.code === "PGRST204" || error.code === "42703") return true;
+          const msg = `${error.message || ""} ${error.details || ""} ${error.hint || ""}`.toLowerCase();
           return msg.includes(column) && (msg.includes("column") || msg.includes("schema cache"));
         }
         let customFieldsMigrationNoticeShown = false;
         function notifyCustomFieldsMigrationNeeded() {
+          const hint = document.getElementById("customFieldsMigrationHint");
+          if (hint) hint.style.display = "block";
           if (customFieldsMigrationNoticeShown) return;
           customFieldsMigrationNoticeShown = true;
           showToast("Custom fields need a quick one-time database update — see Admin ▸ Custom Fields.", true);
-          const hint = document.getElementById("customFieldsMigrationHint");
-          if (hint) hint.style.display = "block";
+        }
+        // Proactively checks (on every load, on every device) whether the database
+        // actually has the custom_fields column yet, instead of only finding out
+        // the hard way the next time someone tries to save a custom field. This is
+        // what makes the warning show up for every admin, not just whoever first
+        // hit the save error.
+        async function checkCustomFieldsColumnSupport() {
+          try {
+            const { error } = await sb.from("options").select("custom_fields").limit(1);
+            if (error && isMissingColumnError(error, "custom_fields")) { notifyCustomFieldsMigrationNeeded(); return; }
+          } catch (e) { /* ignore — network/other errors are handled elsewhere */ }
+          try {
+            const { error } = await sb.from("parts").select("custom_fields").limit(1);
+            if (error && isMissingColumnError(error, "custom_fields")) { notifyCustomFieldsMigrationNeeded(); }
+          } catch (e) { /* ignore */ }
         }
         // Offline fallback: cache the last successful fetch locally so the app can
         // still show inventory if the connection to the database drops.
@@ -1377,6 +1472,27 @@
         // ===================================================================
         // COMBOBOX — reusable searchable dropdown for text inputs
         // ===================================================================
+        // See the .panel.combo-elevated CSS comment — panels use backdrop-filter,
+        // which isolates z-index per panel, so an open dropdown needs its whole
+        // panel temporarily raised above the panels that follow it.
+        function dropAllElevation() { $$(".panel.combo-elevated").forEach((p) => { if (!panelHasOpenDropdown(p)) p.classList.remove("combo-elevated"); }); }
+        // A panel can hold more than one dropdown-driven field (e.g. Vehicle
+        // Make + Part Type live in the same report filter panel). Only drop the
+        // elevation once none of that panel's dropdowns are open any more —
+        // otherwise closing one field's "click outside" check would wrongly
+        // de-elevate a panel while a sibling field's list is still open in it.
+        function panelHasOpenDropdown(panel) {
+          return Boolean(panel && panel.querySelector(".combo-list.open, .adv-combo-list.open"));
+        }
+        function elevatePanelFor(el) {
+          const panel = el.closest(".panel");
+          if (panel) panel.classList.add("combo-elevated");
+          return panel;
+        }
+        function dropElevation(panel) {
+          if (panel && !panelHasOpenDropdown(panel)) panel.classList.remove("combo-elevated");
+        }
+
         function attachCombobox(input, getOptions) {
           const wrap = document.createElement("div");
           wrap.className = "combo-wrap";
@@ -1407,8 +1523,9 @@
               list.innerHTML = filtered.map((o) => `<div class="combo-option" data-value="${escapeHtml(o)}">${escapeHtml(o)}</div>`).join("");
             }
             list.classList.add("open");
+            elevatePanelFor(input);
           }
-          function closeList() { list.classList.remove("open"); highlighted = -1; }
+          function closeList() { list.classList.remove("open"); highlighted = -1; dropElevation(input.closest(".panel")); }
           function selectValue(value) {
             input.value = value;
             closeList();
@@ -1456,7 +1573,7 @@
         attachCombobox($("#vehicleType"), () => state.options.vehicle);
         // Model choices are scoped to whichever vehicle make is currently typed in.
         attachCombobox($("#vehicleModel"), () => state.options.model[$("#vehicleType").value.trim()] || []);
-        attachCombobox($("#madeYear"), () => state.options.year);
+        attachCombobox($("#madeYear"), () => sortedYears(state.options.year));
         attachCombobox($("#partType"), () => state.options.category);
         attachCombobox($("#reportVehicle"), () => state.options.vehicle);
         attachCombobox($("#reportCategory"), () => state.options.category);
@@ -1670,6 +1787,15 @@
           $("#newFieldDependsWrap").style.display = "none";
           renderCustomFieldDefsList(); populateOptionFieldSelect(); renderCustomFieldsForm();
           showToast(`Added field "${label}".`);
+        });
+        $("#copyMigrationSqlBtn").addEventListener("click", async () => {
+          const sql = $("#customFieldsMigrationSql").textContent;
+          try {
+            await navigator.clipboard.writeText(sql);
+            showToast("SQL copied — paste it into the Supabase SQL Editor.");
+          } catch (e) {
+            showToast("Couldn't copy automatically — please select and copy the SQL manually.", true);
+          }
         });
 
         // ===================================================================
@@ -1993,6 +2119,37 @@
         $("#cancelEdit").addEventListener("click", resetForm);
 
         let isSavingPart = false;
+
+        // Whenever a part is saved with a brand-new vehicle make, model, year, part
+        // type, or custom dropdown value (typed straight into the Add Part form
+        // instead of via Admin → Field Options), register it into the shared options
+        // list and persist it to the database so it shows up as a suggestion for
+        // every device from then on.
+        function registerOptionValues(values) {
+          let changed = false;
+          function ensure(list, value) {
+            if (!value || list.includes(value)) return;
+            list.push(value);
+            changed = true;
+          }
+          ensure(state.options.vehicle, values.vehicle);
+          ensure(state.options.category, values.category);
+          ensure(state.options.year, values.madeYear);
+          if (values.vehicle) {
+            if (!state.options.model[values.vehicle]) { state.options.model[values.vehicle] = []; changed = true; }
+            ensure(state.options.model[values.vehicle], values.model);
+          }
+          (state.options.customFieldDefs || []).filter((f) => f.type === "dropdown").forEach((f) => {
+            const val = (values.customFields || {})[f.id];
+            if (!val) return;
+            if (!state.options.customFieldOptions[f.id]) { state.options.customFieldOptions[f.id] = {}; changed = true; }
+            const bucket = state.options.customFieldOptions[f.id];
+            const key = f.dependsOn === "vehicle" ? (values.vehicle || "") : f.dependsOn === "category" ? (values.category || "") : "__all__";
+            if (!bucket[key]) { bucket[key] = []; changed = true; }
+            ensure(bucket[key], val);
+          });
+          return changed;
+        }
         $("#partForm").addEventListener("submit", async (event) => {
           event.preventDefault();
           if (isSavingPart) return;
@@ -2032,6 +2189,7 @@
                   const removedPhotos = prevPhotos.filter((url) => !photos.includes(url));
                   if (removedPhotos.length) deletePhotosFromStorage(removedPhotos);
                   if (quantity !== prevQty) logTx(state.inventory[idx], quantity > prevQty ? "add" : "consume", Math.abs(quantity - prevQty));
+                  if (registerOptionValues(rawValues)) await saveOptions();
                   showToast(`Updated "${name}".`);
                 }
               }
@@ -2045,6 +2203,7 @@
                 if (ok) {
                   Object.assign(duplicate, values);
                   logTx(duplicate, "add", quantity);
+                  if (registerOptionValues(rawValues)) await saveOptions();
                   showToast(`Added ${quantity} to "${duplicate.name}" (matching barcode).`);
                 }
               } else {
@@ -2055,6 +2214,7 @@
                 if (ok) {
                   state.inventory.unshift(part);
                   if (quantity > 0) logTx(part, "add", quantity);
+                  if (registerOptionValues(rawValues)) await saveOptions();
                   showToast(`Added "${name}" to the inventory.`);
                 }
               }
@@ -2105,7 +2265,7 @@
         function renderFeaturedCard(item) {
           const photo = Array.isArray(item.photos) && item.photos[0] ? item.photos[0] : "";
           const badgeClass = stockClass(item.quantity);
-          const tags = [item.category, [item.vehicle, item.model].filter(Boolean).join(" "), item.madeYear].filter(Boolean);
+          const tags = [item.category, item.vehicle, item.model, item.madeYear].filter(Boolean);
           return `
           <div class="result-card-featured" data-id="${escapeHtml(item.id)}">
             <div class="rcf-media" data-photo="${photo ? escapeHtml(photo) : ""}">
@@ -2125,48 +2285,48 @@
             </div>
           </div>`;
         }
-        function renderStatTile(totalUnits, addedTodayUnits) {
-          return `
-          <div class="stat-tile">
-            <div class="stat-tile-top">
-              <div class="stat-tile-label">Total Available Parts</div>
-              <div class="stat-tile-value">${formatNumber(totalUnits)}</div>
-              <div class="stat-tile-note">${addedTodayUnits > 0 ? `📈 +${formatNumber(addedTodayUnits)} units added today` : "No stock changes today"}</div>
-            </div>
-            <button type="button" class="stat-tile-btn">📦 Full Inventory</button>
-          </div>`;
-        }
         function renderCompactCard(item) {
           const photo = Array.isArray(item.photos) && item.photos[0] ? item.photos[0] : "";
           const badgeClass = stockClass(item.quantity);
-          const sub = item.notes || [item.vehicle, item.model].filter(Boolean).join(" ") || item.category || "—";
+          const fields = [
+            ["Make", item.vehicle],
+            ["Model", item.model],
+            ["Year", item.madeYear],
+            ["Position", item.position],
+            ["Direction", item.direction],
+            ["Location", item.location],
+          ];
+          const note = (item.notes || "").trim();
           return `
           <div class="result-card-compact" data-id="${escapeHtml(item.id)}">
             <div class="rcc-media" data-photo="${photo ? escapeHtml(photo) : ""}">
               ${photo ? `<img src="${photo}" alt="" loading="lazy" />` : `<span class="ph-icon-lg">📦</span>`}
             </div>
             <div class="rcc-body">
-              <h4 class="rcc-title">${escapeHtml(item.name)}</h4>
-              <p class="rcc-desc">${escapeHtml(sub)}</p>
+              <div class="rcc-head">
+                <h4 class="rcc-title">${escapeHtml(item.name)}</h4>
+                <span class="rcc-type">${escapeHtml(item.category || "—")}</span>
+              </div>
+              <div class="rcc-info-grid">
+                ${fields.map(([label, value]) => `<div class="rcc-info-item"><span class="rcc-info-label">${escapeHtml(label)}</span><span class="rcc-info-value">${escapeHtml(value || "—")}</span></div>`).join("")}
+              </div>
               <div class="rcc-footer">
                 <span class="rcc-qty ${badgeClass}">${formatNumber(item.quantity)}</span>
-                <span class="rcc-add" aria-hidden="true">＋</span>
+                ${note ? `<span class="rcc-note" title="${escapeHtml(note)}">${escapeHtml(note)}</span>` : ""}
+                <button type="button" class="rcc-edit" data-edit-id="${escapeHtml(item.id)}" aria-label="Edit part" title="Edit part">✎</button>
               </div>
             </div>
           </div>`;
         }
         function renderResultsGrid(results) {
           if (!results.length) return "";
-          const totalUnits = state.inventory.reduce((s, i) => s + Number(i.quantity || 0), 0);
-          const today = todayKey();
-          const addedTodayUnits = state.transactions.filter((t) => t.type === "add" && t.at.slice(0, 10) === today).reduce((s, t) => s + Number(t.qty), 0);
           const [featured, ...rest] = results;
-          return `<div class="results-bento">${renderFeaturedCard(featured)}${renderStatTile(totalUnits, addedTodayUnits)}${rest.map((item) => renderCompactCard(item)).join("")}</div>`;
+          return `<div class="results-bento">${renderFeaturedCard(featured)}${rest.map((item) => renderCompactCard(item)).join("")}</div>`;
         }
         function wireResultsGridClicks(container, onOpenDetail) {
           container.addEventListener("click", (event) => {
-            const statBtn = event.target.closest(".stat-tile-btn");
-            if (statBtn) { switchPage("warehouse"); return; }
+            const editBtn = event.target.closest(".rcc-edit");
+            if (editBtn && editBtn.dataset.editId) { startEdit(editBtn.dataset.editId); return; }
             const card = event.target.closest(".result-card-featured, .result-card-compact");
             if (!card || !card.dataset.id) return;
             const media = event.target.closest("[data-photo]");
@@ -2218,7 +2378,7 @@
         function advOptionsFor(field) {
           if (field === "vehicle") return state.options.vehicle;
           if (field === "category") return state.options.category;
-          if (field === "year") return state.options.year;
+          if (field === "year") return sortedYears(state.options.year);
           if (field === "model") return advFilters.vehicle ? (state.options.model[advFilters.vehicle] || []) : advAllModels();
           return [];
         }
@@ -2249,6 +2409,7 @@
             if (advFilters[field]) html += `<div class="adv-combo-option clear-option" data-clear="1">✕ Clear this filter</div>`;
             list.innerHTML = html;
             list.classList.add("open");
+            elevatePanelFor(btn);
             const searchInput = $(".adv-combo-search", list);
             searchInput.value = filterText || "";
             searchInput.addEventListener("input", () => renderOptions(searchInput.value));
@@ -2257,12 +2418,13 @@
             setTimeout(() => searchInput.focus(), 0);
           }
 
-          function closeList() { list.classList.remove("open"); }
+          function closeList() { list.classList.remove("open"); dropElevation(btn.closest(".panel")); }
 
           btn.addEventListener("click", (e) => {
             e.stopPropagation();
             const wasOpen = list.classList.contains("open");
             $$(".adv-combo-list").forEach((l) => l.classList.remove("open"));
+            dropAllElevation();
             if (!wasOpen) renderOptions("");
           });
 
@@ -2296,7 +2458,7 @@
         }
 
         document.addEventListener("click", (e) => {
-          if (!e.target.closest(".adv-filter-chip")) $$(".adv-combo-list").forEach((l) => l.classList.remove("open"));
+          if (!e.target.closest(".adv-filter-chip")) { $$(".adv-combo-list").forEach((l) => l.classList.remove("open")); dropAllElevation(); }
         });
 
         $("#advClearAll").addEventListener("click", () => {
@@ -2387,13 +2549,17 @@
         $("#reportWeek").addEventListener("click", () => setReportRange(7));
         $("#reportMonth").addEventListener("click", () => setReportRange(30));
         $("#reportRun").addEventListener("click", runReport);
-        $("#reportPrint").addEventListener("click", () => window.print());
+        $("#reportPrint").addEventListener("click", printInventoryReport);
 
-        function runReport() {
+        // Shared by the on-screen report and the printable report — computes the
+        // exact same filtered parts + transactions once so both stay in sync.
+        function computeReportData() {
           const from = $("#reportFrom").value;
           const to = $("#reportTo").value;
-          const vehicleFilter = $("#reportVehicle").value.trim().toLowerCase();
-          const categoryFilter = $("#reportCategory").value.trim().toLowerCase();
+          const vehicleValue = $("#reportVehicle").value.trim();
+          const categoryValue = $("#reportCategory").value.trim();
+          const vehicleFilter = vehicleValue.toLowerCase();
+          const categoryFilter = categoryValue.toLowerCase();
 
           const inRange = (iso) => {
             const d = iso.slice(0, 10);
@@ -2402,7 +2568,7 @@
             return true;
           };
 
-          let filteredParts = state.inventory.filter((p) => {
+          const filteredParts = state.inventory.filter((p) => {
             if (vehicleFilter && !(p.vehicle || "").toLowerCase().includes(vehicleFilter)) return false;
             if (categoryFilter && !(p.category || "").toLowerCase().includes(categoryFilter)) return false;
             return true;
@@ -2414,6 +2580,20 @@
           const consumed = txInRange.filter((t) => t.type === "consume").reduce((s, t) => s + Number(t.qty), 0);
           const totalUnits = filteredParts.reduce((s, p) => s + Number(p.quantity || 0), 0);
 
+          const byPart = filteredParts.map((p) => {
+            const tx = txInRange.filter((t) => t.partId === p.id);
+            const addedQ = tx.filter((t) => t.type === "add").reduce((s, t) => s + Number(t.qty), 0);
+            const consumedQ = tx.filter((t) => t.type === "consume").reduce((s, t) => s + Number(t.qty), 0);
+            return { p, addedQ, consumedQ };
+          });
+
+          return { from, to, vehicleValue, categoryValue, filteredParts, txInRange, added, consumed, totalUnits, byPart };
+        }
+
+        function runReport() {
+          const data = computeReportData();
+          const { from, to, filteredParts, added, consumed, totalUnits, byPart } = data;
+
           $("#reportRangeLabel").textContent = `${from || "Start"} → ${to || "Today"} · ${filteredParts.length} part types`;
           $("#reportSummary").innerHTML = [
             ["Part Types", formatNumber(filteredParts.length)],
@@ -2422,14 +2602,8 @@
             ["Consumed in Period", formatNumber(consumed)],
           ].map(([l, v]) => `<div class="report-box"><div class="rv">${v}</div><div class="rl">${l}</div></div>`).join("");
 
-          const byPart = filteredParts.map((p) => {
-            const tx = txInRange.filter((t) => t.partId === p.id);
-            const addedQ = tx.filter((t) => t.type === "add").reduce((s, t) => s + Number(t.qty), 0);
-            const consumedQ = tx.filter((t) => t.type === "consume").reduce((s, t) => s + Number(t.qty), 0);
-            return { p, addedQ, consumedQ };
-          }).filter((row) => row.addedQ > 0 || row.consumedQ > 0 || (!from && !to));
-
-          $("#reportBody").innerHTML = byPart.map(({ p, addedQ, consumedQ }) => `
+          const rowsForDisplay = byPart.filter((row) => row.addedQ > 0 || row.consumedQ > 0 || (!from && !to));
+          $("#reportBody").innerHTML = rowsForDisplay.map(({ p, addedQ, consumedQ }) => `
             <tr>
               <td class="part-name">${escapeHtml(p.name)}</td>
               <td><span class="pill">${escapeHtml(p.category || "—")}</span></td>
@@ -2438,7 +2612,142 @@
               <td style="color:var(--danger);font-weight:800">${consumedQ ? "−" + formatNumber(consumedQ) : "—"}</td>
               <td class="stock-value ${stockClass(p.quantity)}">${formatNumber(p.quantity)}</td>
             </tr>`).join("");
-          $("#reportEmpty").classList.toggle("show", byPart.length === 0);
+          $("#reportEmpty").classList.toggle("show", rowsForDisplay.length === 0);
+        }
+
+        // ===================================================================
+        // PRINTABLE REPORT — a clean, spreadsheet-style document opened in its
+        // own tab: Available parts, then Consumed, then Added — each grouped by
+        // part type with a subtotal per group and a grand total.
+        // ===================================================================
+        function groupRowsByCategory(rows) {
+          const order = state.options.category || [];
+          const buckets = new Map();
+          rows.forEach((row) => {
+            const cat = row.category || "Uncategorized";
+            if (!buckets.has(cat)) buckets.set(cat, []);
+            buckets.get(cat).push(row);
+          });
+          const sortedCats = [...buckets.keys()].sort((a, b) => {
+            const ia = order.indexOf(a), ib = order.indexOf(b);
+            if (ia === -1 && ib === -1) return a.localeCompare(b, "en");
+            if (ia === -1) return 1;
+            if (ib === -1) return -1;
+            return ia - ib;
+          });
+          return sortedCats.map((cat) => ({
+            category: cat,
+            rows: buckets.get(cat).sort((a, b) => a.name.localeCompare(b.name, "en")),
+          }));
+        }
+
+        function renderPrintSection(title, groups, total, cols) {
+          const colHeadMap = { vehicle: "Vehicle Make", model: "Model", year: "Year", location: "Location" };
+          if (!groups.length) {
+            return `<section class="rp-section"><h2>${escapeHtml(title)}</h2><p class="rp-empty">No records for this selection.</p></section>`;
+          }
+          const groupsHtml = groups.map((g) => {
+            const subtotal = g.rows.reduce((s, r) => s + r.qty, 0);
+            const rowsHtml = g.rows.map((r) => `
+              <tr>
+                <td>${escapeHtml(r.name)}</td>
+                ${cols.map((c) => `<td>${escapeHtml(r[c] || "—")}</td>`).join("")}
+                <td class="rp-num">${formatNumber(r.qty)}</td>
+              </tr>`).join("");
+            return `
+              <tbody class="rp-group">
+                <tr class="rp-group-head"><td colspan="${cols.length + 2}">${escapeHtml(g.category)}</td></tr>
+                ${rowsHtml}
+                <tr class="rp-subtotal"><td colspan="${cols.length + 1}">Subtotal — ${escapeHtml(g.category)} (${formatNumber(g.rows.length)} item${g.rows.length === 1 ? "" : "s"})</td><td class="rp-num">${formatNumber(subtotal)}</td></tr>
+              </tbody>`;
+          }).join("");
+          const headCols = `<th>Part Name</th>${cols.map((c) => `<th>${colHeadMap[c]}</th>`).join("")}<th class="rp-num">Quantity</th>`;
+          return `
+            <section class="rp-section">
+              <h2>${escapeHtml(title)} <span class="rp-section-total">Total: ${formatNumber(total)} units</span></h2>
+              <table class="rp-table">
+                <thead><tr>${headCols}</tr></thead>
+                ${groupsHtml}
+              </table>
+            </section>`;
+        }
+
+        function buildReportPrintDocument(data) {
+          const { from, to, vehicleValue, categoryValue, filteredParts, byPart, added, consumed, totalUnits } = data;
+
+          const availableRows = filteredParts.map((p) => ({
+            category: p.category || "Uncategorized", name: p.name, vehicle: p.vehicle, model: p.model,
+            year: p.madeYear, location: p.location, qty: Number(p.quantity || 0),
+          }));
+          const consumedRows = byPart.filter((r) => r.consumedQ > 0).map((r) => ({
+            category: r.p.category || "Uncategorized", name: r.p.name, vehicle: r.p.vehicle, model: r.p.model,
+            year: r.p.madeYear, qty: r.consumedQ,
+          }));
+          const addedRows = byPart.filter((r) => r.addedQ > 0).map((r) => ({
+            category: r.p.category || "Uncategorized", name: r.p.name, vehicle: r.p.vehicle, model: r.p.model,
+            year: r.p.madeYear, qty: r.addedQ,
+          }));
+
+          const filtersLine = [
+            vehicleValue ? `Vehicle Make: ${escapeHtml(vehicleValue)}` : null,
+            categoryValue ? `Part Type: ${escapeHtml(categoryValue)}` : null,
+          ].filter(Boolean).join(" · ") || "All vehicles · All part types";
+
+          return `<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<title>Inventory Report — ${escapeHtml(from || "start")} to ${escapeHtml(to || "today")}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #111; margin: 24px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .rp-meta { color: #555; font-size: 13px; margin: 2px 0; }
+  .rp-summary { display: flex; gap: 14px; margin: 18px 0 26px; flex-wrap: wrap; }
+  .rp-summary-box { border: 1px solid #ddd; border-radius: 8px; padding: 10px 16px; min-width: 120px; }
+  .rp-summary-box .v { font-size: 20px; font-weight: 800; }
+  .rp-summary-box .l { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: .03em; }
+  .rp-section { margin-bottom: 30px; page-break-inside: avoid; }
+  .rp-section h2 { font-size: 15px; border-bottom: 2px solid #111; padding-bottom: 6px; display: flex; justify-content: space-between; align-items: baseline; }
+  .rp-section-total { font-size: 12px; font-weight: 700; color: #333; }
+  .rp-empty { color: #777; font-size: 13px; font-style: italic; }
+  table.rp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+  table.rp-table th { text-align: left; border-bottom: 1px solid #999; padding: 6px 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .02em; color: #444; }
+  table.rp-table td { padding: 5px 8px; border-bottom: 1px solid #eee; }
+  tr.rp-group-head td { background: #f2f2f2; font-weight: 800; padding: 6px 8px; border-top: 1px solid #ccc; }
+  tr.rp-subtotal td { font-weight: 700; border-top: 1px solid #999; background: #fafafa; }
+  .rp-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @media print { body { margin: 10mm; } .rp-section { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+  <h1>Quality Part X — Inventory Report</h1>
+  <div class="rp-meta">Period: ${escapeHtml(from || "Start")} → ${escapeHtml(to || "Today")} &nbsp;·&nbsp; ${filtersLine}</div>
+  <div class="rp-meta">Printed: ${escapeHtml(new Date().toLocaleString("en-US"))}</div>
+  <div class="rp-summary">
+    <div class="rp-summary-box"><div class="v">${formatNumber(filteredParts.length)}</div><div class="l">Part Types</div></div>
+    <div class="rp-summary-box"><div class="v">${formatNumber(totalUnits)}</div><div class="l">Total Available Units</div></div>
+    <div class="rp-summary-box"><div class="v">${formatNumber(added)}</div><div class="l">Added in Period</div></div>
+    <div class="rp-summary-box"><div class="v">${formatNumber(consumed)}</div><div class="l">Consumed in Period</div></div>
+  </div>
+  ${renderPrintSection("Available Parts (Current Stock)", groupRowsByCategory(availableRows), totalUnits, ["vehicle", "model", "year", "location"])}
+  ${renderPrintSection("Consumed in Period", groupRowsByCategory(consumedRows), consumed, ["vehicle", "model", "year"])}
+  ${renderPrintSection("Added in Period", groupRowsByCategory(addedRows), added, ["vehicle", "model", "year"])}
+</body>
+</html>`;
+        }
+
+        function printInventoryReport() {
+          const data = computeReportData();
+          if (!data.filteredParts.length) { showToast("No parts match this selection — adjust the filters first.", true); return; }
+          const html = buildReportPrintDocument(data);
+          const win = window.open("", "_blank");
+          if (!win) { showToast("Please allow pop-ups for this site to print the report.", true); return; }
+          win.document.open();
+          win.document.write(html);
+          win.document.close();
+          win.focus();
+          setTimeout(() => { win.print(); }, 300);
         }
 
         // ===================================================================
@@ -2509,32 +2818,57 @@
             scannerMessage("This browser does not support camera access. Try the latest version of Chrome, Edge, or Safari.", "error");
             state.scanner.running = false; retryScanner.style.display = "block"; return;
           }
+          // Open the camera stream right away, before loading any external library.
+          // iPhone/Safari can silently block getUserMedia() if it happens after an
+          // async delay (like a network fetch) — it only reliably works while it's
+          // still tied to the tap that opened the scanner.
+          let stream;
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+          } catch (cameraError) {
+            if (!state.scanner.running) return;
+            state.scanner.running = false; retryScanner.style.display = "block";
+            scannerMessage(describeCameraError(cameraError), "error");
+            return;
+          }
+          if (!state.scanner.running) { stream.getTracks().forEach((t) => t.stop()); return; }
+          state.scanner.stream = stream;
+          scannerVideo.srcObject = stream;
+          try { await scannerVideo.play(); } catch (e) { /* Safari can throw AbortError if stopped very quickly; harmless */ }
+          scannerMessage("Camera ready — point it at the barcode.");
           try {
             const zxing = await loadZXing();
             if (!state.scanner.running) return;
-            scannerMessage("Camera ready — point it at the barcode.");
             const reader = new zxing.BrowserMultiFormatReader();
-            state.scanner.controls = await reader.decodeFromVideoDevice(undefined, scannerVideo, (result) => {
-              if (result && result.getText()) handleScan(result.getText());
-            });
+            const onResult = (result) => { if (result && result.getText()) handleScan(result.getText()); };
+            if (typeof reader.decodeFromStream === "function") {
+              // Scan the camera stream we already opened — this is what makes
+              // scanning reliable on iPhone (no second, delayed getUserMedia call).
+              state.scanner.controls = await reader.decodeFromStream(stream, scannerVideo, onResult);
+            } else {
+              state.scanner.controls = await reader.decodeFromVideoDevice(undefined, scannerVideo, onResult);
+            }
             state.scanner.mode = "zxing";
           } catch (zxingError) {
             if (!state.scanner.running) return;
             try { await startNativeScanner(); }
-            catch (cameraError) {
+            catch (detectorError) {
               state.scanner.running = false; retryScanner.style.display = "block";
-              scannerMessage(describeCameraError(cameraError), "error");
+              scannerMessage("This device can't scan barcodes automatically. Try a different browser, or type the barcode number in manually.", "error");
             }
           }
         }
         async function startNativeScanner() {
-          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("no camera api");
           if (!("BarcodeDetector" in window)) throw new Error("no native detector");
           const formats = await BarcodeDetector.getSupportedFormats();
           const detector = new BarcodeDetector({ formats: formats.length ? formats : undefined });
-          state.scanner.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
-          scannerVideo.srcObject = state.scanner.stream;
-          await scannerVideo.play();
+          // Reuse the stream already attached to the video element instead of
+          // requesting the camera a second time.
+          if (!state.scanner.stream) {
+            state.scanner.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+            scannerVideo.srcObject = state.scanner.stream;
+            await scannerVideo.play();
+          }
           state.scanner.mode = "native";
           scannerMessage(`Camera ready — detecting ${formats.length || "several"} barcode types.`);
           const detect = async () => {
@@ -2593,6 +2927,7 @@
           state.inventory = inventory;
           state.options = options;
           state.transactions = transactions;
+          if (seedMissingModels()) await saveOptions();
           populateOptionFieldSelect();
           renderCustomFieldDefsList();
           renderCustomFieldsForm();
@@ -2601,6 +2936,7 @@
           switchPage("home");
           renderWarehouseList();
           showToast("Data loaded.");
+          checkCustomFieldsColumnSupport();
         }
         bootstrap();
       })();
