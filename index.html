@@ -49,6 +49,220 @@
         --warning: #ad7410;
         --shadow: 0 24px 70px rgba(49, 76, 112, 0.12);
       }
+      /* ===== Authentication screen ===== */
+      #appContent[hidden], .auth-screen[hidden] { display: none !important; }
+      :root {
+        --auth-bg-0: #070a12;
+        --auth-card: #0e1320;
+        --auth-card-2: #121828;
+        --auth-line: #232b40;
+        --auth-ink: #eef1fb;
+        --auth-ink-dim: #8993ad;
+        --auth-ink-faint: #5c6483;
+        --auth-ice: #7dd8ff;
+        --auth-ice-dim: #3aa9d9;
+        --auth-ok: #3ee891;
+        --auth-err: #ff5f6d;
+        --auth-field: #0b0f1a;
+      }
+      :root[data-theme="light"] {
+        --auth-bg-0: #f4f7fb;
+        --auth-card: #ffffff;
+        --auth-card-2: #f7faff;
+        --auth-line: rgba(37, 57, 82, 0.18);
+        --auth-ink: #172338;
+        --auth-ink-dim: #66758b;
+        --auth-ink-faint: #7e8da3;
+        --auth-ice: #2e70c9;
+        --auth-ice-dim: #2e70c9;
+        --auth-ok: #188b5e;
+        --auth-err: #d84d68;
+        --auth-field: #eef3f9;
+      }
+      .auth-screen {
+        width: 100%; min-height: 100svh; display: flex; align-items: center; justify-content: center;
+        padding: 56px 24px 40px; position: relative; overflow: hidden;
+        background:
+          radial-gradient(1100px 560px at 50% -10%, #101a2e 0%, transparent 60%),
+          radial-gradient(900px 500px at 90% 110%, #0f1a24 0%, transparent 55%),
+          var(--auth-bg-0);
+        color: var(--auth-ink);
+      }
+      .auth-theme-toggle {
+        position: fixed; top: 18px; right: 18px; width: 42px; height: 42px; z-index: 2;
+        border: 1px solid var(--auth-line); border-radius: 12px; background: var(--auth-card-2);
+        color: var(--auth-ink-dim); box-shadow: 0 8px 24px rgba(0,0,0,.28);
+        transition: border-color .2s ease, color .2s ease, transform .2s ease;
+      }
+      .auth-theme-toggle:hover { color: var(--auth-ink); border-color: var(--auth-ice-dim); transform: translateY(-1px); }
+      .auth-page { width: 100%; max-width: 460px; display: flex; flex-direction: column; align-items: center; }
+      .auth-brand { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 34px; color: var(--auth-ink-dim); font-size: 15px; }
+      .auth-brand-logo { display: flex; align-items: center; height: 42px; padding: 6px 10px; border-radius: 12px; background: #fff; box-shadow: 0 9px 24px rgba(0,0,0,.35); }
+      .auth-brand-logo img { height: 100%; width: auto; display: block; max-width: 180px; }
+      .auth-brand-text { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+      .auth-brand b { color: var(--auth-ink); font-weight: 700; font-size: 1.1rem; }
+      .auth-brand-subtitle { color: var(--auth-ink-dim); font-size: .78rem; letter-spacing: .02em; }
+      .auth-brand .badge {
+        margin-left: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+        color: var(--auth-ice); background: rgba(125,216,255,.1);
+        border: 1px solid rgba(125,216,255,.28); padding: 3px 8px; border-radius: 999px;
+      }
+      .auth-card {
+        width: 100%; background: linear-gradient(180deg, var(--auth-card-2), var(--auth-card));
+        border: 1px solid var(--auth-line); border-radius: 20px; padding: 38px 30px 32px;
+        text-align: center; box-shadow: 0 30px 80px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.02);
+        position: relative;
+      }
+      .auth-card::before {
+        content: ""; position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(125,216,255,.5), transparent);
+      }
+      .auth-handle { width: 36px; height: 4px; border-radius: 99px; background: var(--auth-line); margin: 0 auto 22px; }
+      .auth-card h1 { font-size: 22px; font-weight: 600; margin: 0 0 10px; letter-spacing: -.2px; }
+      .auth-sub { font-size: 14.5px; color: var(--auth-ink-dim); margin: 0 0 26px; line-height: 1.5; }
+      .auth-field { display: flex; flex-direction: column; gap: 7px; text-align: left; margin-bottom: 24px; }
+      .auth-field label { color: var(--auth-ink-dim); font-size: .78rem; font-weight: 700; }
+      .auth-field input {
+        width: 100%; height: 46px; border: 1px solid var(--auth-line); border-radius: 12px;
+        background: var(--auth-field); color: var(--auth-ink);
+        padding: 10px 12px; outline: none; transition: border-color .2s ease, box-shadow .2s ease;
+      }
+      .auth-field input:focus { border-color: var(--auth-ice-dim); box-shadow: 0 0 0 4px rgba(125,216,255,.12); }
+      .auth-pin-label { display: block; text-align: left; color: var(--auth-ink-dim); font-size: .78rem; font-weight: 700; margin-bottom: 9px; }
+      .auth-stage { position: relative; height: 86px; margin: 0 0 26px; direction: ltr; }
+      .auth-slots { position: absolute; inset: 0; display: flex; justify-content: center; align-items: flex-start; gap: 14px; padding-top: 8px; }
+      .auth-slot { position: relative; width: 58px; height: 66px; transform-origin: 50% 320%; will-change: transform, opacity; }
+      .auth-slot input {
+        width: 100%; height: 100%; text-align: center; font-size: 24px; font-weight: 600;
+        color: var(--auth-ink); background: var(--auth-field);
+        border: 1.5px solid var(--auth-line); border-radius: 14px; outline: none; caret-color: var(--auth-ice);
+        position: relative; z-index: 1; -moz-appearance: textfield;
+        transition: border-color .2s ease, box-shadow .2s ease;
+      }
+      .auth-slot input::-webkit-outer-spin-button, .auth-slot input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+      .auth-slot input:focus { border-color: var(--auth-ice-dim); box-shadow: 0 0 0 4px rgba(125,216,255,.12); }
+      .auth-slot.filled input { border-color: var(--auth-ice-dim); box-shadow: 0 0 12px -2px rgba(125,216,255,.35); }
+      .auth-slot__win { position: absolute; inset: -4px; pointer-events: none; z-index: 2; }
+      .auth-slot__spark { width: 100%; height: 100%; overflow: visible; }
+      .auth-slot__spark rect {
+        fill: none; stroke: var(--auth-ice); stroke-width: 2.5; stroke-linecap: round;
+        stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0;
+      }
+      .auth-slot.glowing .auth-slot__spark rect { animation: authLap .5s ease forwards; }
+      @keyframes authLap {
+        0% { stroke-dashoffset: 1; opacity: 1; }
+        80% { stroke-dashoffset: 0; opacity: 1; }
+        100% { stroke-dashoffset: 0; opacity: 0; }
+      }
+      .auth-result {
+        position: absolute; top: 8px; left: 50%; width: 58px; height: 66px; margin-left: -29px;
+        border-radius: 14px; background: var(--auth-field);
+        border: 1.5px solid var(--auth-line); box-shadow: none;
+        display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.4);
+        z-index: 4; pointer-events: none;
+      }
+      .auth-result.show {
+        opacity: 1; transform: scale(1);
+        transition: transform .5s cubic-bezier(.34,1.55,.4,1), opacity .28s ease;
+      }
+      .auth-result.win { border-color: var(--auth-ok); box-shadow: 0 0 0 5px rgba(62,232,145,.14), 0 0 26px -2px rgba(62,232,145,.75); }
+      .auth-result.bad { border-color: var(--auth-err); box-shadow: 0 0 0 5px rgba(255,95,109,.16), 0 0 26px -2px rgba(255,95,109,.8); }
+      .auth-result svg { width: 26px; height: 26px; position: absolute; }
+      .auth-result .auth-check path, .auth-result .auth-x path {
+        fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+        stroke-dasharray: 24; stroke-dashoffset: 24;
+      }
+      .auth-result .auth-check path { stroke: var(--auth-ok); }
+      .auth-result .auth-x path { stroke: var(--auth-err); }
+      .auth-result.win .auth-check path { animation: authDraw .3s ease .18s forwards; }
+      .auth-result.bad .auth-check { opacity: 0; }
+      .auth-result.bad .auth-x path { opacity: 1; animation: authDraw .22s ease forwards; }
+      @keyframes authDraw { to { stroke-dashoffset: 0; } }
+      .auth-status { min-height: 18px; font-size: 13px; margin: 0 0 22px; color: var(--auth-err); opacity: 0; transition: opacity .18s ease; }
+      .auth-status.show { opacity: 1; }
+      .auth-status.ok { color: var(--auth-ok); font-weight: 600; }
+      .auth-login-btn { width: 100%; margin-top: 0; }
+      .auth-footnote { margin: 26px 0 0; color: var(--auth-ink-faint); font-size: 12.5px; line-height: 1.6; }
+      .auth-card input::placeholder { color: var(--auth-ink-faint); }
+      .auth-copy { display: contents; }
+      .auth-copy-content { display: none; }
+      @media (min-width: 900px) {
+        body:has(#authScreen:not([hidden])) { padding-left: 0; }
+        .auth-screen {
+          min-height: 100vh; padding: 48px clamp(32px, 7vw, 112px);
+          align-items: stretch;
+        }
+        .auth-page {
+          width: min(1120px, 100%); max-width: none;
+          display: grid; grid-template-columns: minmax(0, 1fr) minmax(400px, 460px);
+          align-items: center; gap: clamp(48px, 8vw, 120px);
+        }
+        .auth-copy {
+          display: flex; flex-direction: column; align-items: flex-start;
+          justify-content: center; gap: 30px; min-width: 0;
+        }
+        .auth-brand { align-items: flex-start; margin: 0; }
+        .auth-brand-text { align-items: flex-start; }
+        .auth-copy-content {
+          display: block; max-width: 520px; text-align: left;
+        }
+        .auth-copy-content h2 {
+          margin: 0 0 14px; font-size: clamp(2.2rem, 4vw, 4rem);
+          line-height: 1.08; letter-spacing: -.055em;
+        }
+        .auth-copy-content p {
+          margin: 0; color: var(--auth-ink-dim); font-size: 1rem;
+          line-height: 1.7; max-width: 44rem;
+        }
+        .auth-card { align-self: center; }
+      }
+
+      /* ===== Employee management ===== */
+      .employee-status { font-size: .72rem; font-weight: 800; }
+      .employee-status.active { color: var(--accent); } .employee-status.inactive { color: var(--danger); }
+      .admin-only { display: none !important; }
+      .admin-only.visible { display: flex !important; }
+      .employee-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+      .employee-form-note { color: var(--muted); font-size: .72rem; margin-top: 5px; line-height: 1.5; }
+      .current-user-chip { color: var(--muted); font-size: .72rem; padding: 9px 0 3px; }
+      .employee-page-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+      .employee-page-top .section-caption { margin-bottom: 0; }
+      .employee-count { color: var(--muted); font-size: .78rem; font-weight: 700; white-space: nowrap; }
+      .employee-form-panel { margin-bottom: 22px; }
+      .employee-form-panel.is-editing { border-color: rgba(247, 201, 105, .48); }
+      .employee-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+      .employee-card {
+        position: relative; display: flex; flex-direction: column; gap: 16px; min-width: 0;
+        padding: 18px; border: 1px solid var(--border); border-radius: var(--radius);
+        background: linear-gradient(145deg, var(--panel), var(--bg-soft)); box-shadow: var(--shadow);
+        transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+      }
+      .employee-card:hover { transform: translateY(-2px); border-color: var(--border-strong); background: var(--panel-hover); }
+      .employee-card-head { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+      .employee-avatar {
+        width: 48px; height: 48px; border-radius: 15px; display: grid; place-items: center; flex-shrink: 0;
+        color: var(--accent-ink); background: linear-gradient(135deg, var(--accent), var(--blue));
+        font-size: 1.15rem; font-weight: 900; text-transform: uppercase;
+      }
+      .employee-card-identity { min-width: 0; flex: 1; }
+      .employee-card-name { margin: 0; font-size: 1rem; font-weight: 850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .employee-card-role { margin-top: 3px; color: var(--muted); font-size: .72rem; }
+      .employee-card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border); }
+      .employee-card-meta-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+      .employee-card-meta-label { color: var(--muted); font-size: .62rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+      .employee-card-meta-value { color: var(--text); font-size: .76rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .employee-card-footer { display: flex; gap: 8px; margin-top: auto; }
+      .employee-card-footer button { flex: 1; min-width: 0; }
+      .employee-empty { grid-column: 1 / -1; border: 1px dashed var(--border-strong); border-radius: var(--radius); }
+      @media (max-width: 560px) {
+        .employee-cards { grid-template-columns: 1fr; }
+        .employee-card { padding: 16px; }
+      }
+      @media (max-width: 520px) {
+        .auth-card { padding: 30px 18px 26px; }
+        .auth-slots { gap: 9px; } .auth-slot { width: 54px; }
+        .auth-result { width: 54px; margin-left: -27px; }
+      }
       * { box-sizing: border-box; }
       body {
         margin: 0;
@@ -63,6 +277,7 @@
         transition: background 220ms ease, color 220ms ease;
         padding-bottom: calc(var(--nav-h) + 18px);
       }
+      body:has(#authScreen:not([hidden])) { padding-bottom: 0; }
       button, input, select, textarea { font: inherit; color: inherit; }
       button { cursor: pointer; }
       button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
@@ -85,6 +300,14 @@
       .icon-button { width: 42px; height: 42px; display: grid; place-items: center; font-size: 1.15rem; border: 1px solid var(--border); background: var(--panel); color: var(--muted-strong); border-radius: 12px; transition: 160ms ease; box-shadow: 0 5px 16px rgba(0,0,0,.05); flex-shrink: 0; }
       .icon-button:hover { color: var(--text); border-color: var(--border-strong); background: var(--panel-hover); }
       .topbar-actions { display: flex; align-items: center; gap: 8px; }
+      .desktop-header-options { display: none; align-items: center; gap: 8px; }
+      .header-option {
+        min-height: 42px; padding: 0 12px; display: inline-flex; align-items: center;
+        gap: 7px; border: 1px solid var(--border); border-radius: 12px;
+        background: var(--panel); color: var(--muted-strong); font-size: .78rem; font-weight: 800;
+        transition: 160ms ease;
+      }
+      .header-option:hover { color: var(--text); border-color: var(--border-strong); background: var(--panel-hover); }
 
       /* ===== Pages ===== */
       .page { display: none; }
@@ -146,7 +369,7 @@
       .field.span-2 { grid-column: span 2; }
       .field label { font-size: .78rem; font-weight: 700; color: var(--muted-strong); }
       .field .hint { font-size: .68rem; color: var(--muted); }
-      input[type=text], input[type=number], input[type=date], input[type=search], select, textarea {
+      input[type=text], input[type=password], input[type=number], input[type=date], input[type=search], select, textarea {
         border: 1px solid var(--border); border-radius: 12px; background: var(--bg-soft); color: var(--text);
         padding: 11px 12px; width: 100%;
       }
@@ -387,10 +610,12 @@
       .nav-btn.active { color: var(--accent); }
       .nav-fab { position: relative; top: -18px; width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #88baff); color: #071b16; display: grid; place-items: center; font-size: 1.3rem; border: 4px solid var(--bg); box-shadow: 0 10px 24px rgba(66,201,143,.35); flex: 0 0 auto; }
       .nav-fab .nav-label { display: none; }
+      .desktop-nav-employee, .desktop-only-nav { display: none; }
 
       /* ===== Desktop sidebar (bottom-nav becomes a side rail) ===== */
       @media (min-width: 900px) {
         body { padding-bottom: 24px; padding-left: 232px; }
+        body:has(#authScreen:not([hidden])) { padding-left: 0; }
         .bottom-nav {
           top: 0; bottom: 0; left: 0; right: auto; height: 100vh; width: 216px;
           flex-direction: column; align-items: stretch; justify-content: flex-start;
@@ -410,6 +635,14 @@
           font-size: .86rem; border: 1px solid transparent; box-shadow: 0 8px 20px rgba(66,201,143,.18);
         }
         .nav-fab .nav-label { display: inline; font-weight: 800; }
+        .desktop-nav-employee.admin-visible, .desktop-only-nav { display: flex; }
+        .nav-logout {
+          margin-top: auto; color: var(--danger); border-top: 1px solid var(--border);
+          border-radius: 0 0 12px 12px; padding-top: 18px;
+        }
+        .nav-logout:hover { color: var(--danger); background: rgba(255,127,145,.09); }
+        .desktop-header-options { display: flex; }
+        #themeToggle { display: none; }
         .toast { bottom: 24px; }
       }
 
@@ -482,6 +715,51 @@
     </style>
   </head>
   <body>
+    <!-- ===== Login screen (based on the supplied four-digit verification design) ===== -->
+    <section class="auth-screen" id="authScreen" dir="ltr">
+      <button class="auth-theme-toggle" id="authThemeToggle" type="button" aria-label="Toggle theme" title="Toggle theme"><span id="authThemeIcon">☼</span></button>
+      <div class="auth-page">
+        <div class="auth-copy">
+          <div class="auth-brand">
+            <div class="auth-brand-text">
+              <b>Quality Part X</b>
+              <span class="auth-brand-subtitle">Part's-app</span>
+            </div>
+          </div>
+          <div class="auth-copy-content">
+            <h2>Keep every part<br />within reach.</h2>
+            <p>Sign in to manage stock, track activity, and keep your warehouse moving with confidence.</p>
+          </div>
+        </div>
+        <div class="auth-card">
+          <div class="auth-handle"></div>
+          <h1>Sign in</h1>
+          <p class="auth-sub">Enter your username and four-digit password.</p>
+          <div class="auth-field">
+            <label for="loginUsername">Username</label>
+            <input id="loginUsername" type="text" autocomplete="username" maxlength="40" placeholder="Enter username" />
+          </div>
+          <span class="auth-pin-label">Password — 4 digits</span>
+          <div class="auth-stage">
+            <div class="auth-slots" id="authSlots">
+              <label class="auth-slot"><input inputmode="numeric" autocomplete="one-time-code" maxlength="1" data-auth-i="0" aria-label="First digit" /><span class="auth-slot__win"><svg class="auth-slot__spark" viewBox="0 0 66 74"><rect x="2" y="2" width="62" height="70" rx="14" pathLength="1"/></svg></span></label>
+              <label class="auth-slot"><input inputmode="numeric" maxlength="1" data-auth-i="1" aria-label="Second digit" /><span class="auth-slot__win"><svg class="auth-slot__spark" viewBox="0 0 66 74"><rect x="2" y="2" width="62" height="70" rx="14" pathLength="1"/></svg></span></label>
+              <label class="auth-slot"><input inputmode="numeric" maxlength="1" data-auth-i="2" aria-label="Third digit" /><span class="auth-slot__win"><svg class="auth-slot__spark" viewBox="0 0 66 74"><rect x="2" y="2" width="62" height="70" rx="14" pathLength="1"/></svg></span></label>
+              <label class="auth-slot"><input inputmode="numeric" maxlength="1" data-auth-i="3" aria-label="Fourth digit" /><span class="auth-slot__win"><svg class="auth-slot__spark" viewBox="0 0 66 74"><rect x="2" y="2" width="62" height="70" rx="14" pathLength="1"/></svg></span></label>
+            </div>
+            <div class="auth-result" id="authResult">
+              <svg class="auth-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>
+              <svg class="auth-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </div>
+          </div>
+          <div class="auth-status" id="authStatus" role="status"></div>
+          <button class="primary-button auth-login-btn" id="loginBtn" type="button">Sign in</button>
+          <p class="auth-footnote">Accounts are created and managed by a responsible user.</p>
+        </div>
+      </div>
+    </section>
+
+    <div id="appContent" hidden>
     <div class="app-shell">
       <!-- ===== Header ===== -->
       <header class="topbar">
@@ -492,6 +770,10 @@
           </div>
         </div>
         <div class="topbar-actions">
+          <div class="desktop-header-options" aria-label="Desktop options">
+            <button class="header-option" id="headerExport" type="button"><span aria-hidden="true">⬇️</span><span>Export CSV</span></button>
+            <button class="header-option" id="headerTheme" type="button"><span aria-hidden="true">🌓</span><span>Theme</span></button>
+          </div>
           <button class="icon-button" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"><span id="themeIcon">☼</span></button>
         </div>
       </header>
@@ -864,6 +1146,58 @@
             </div>
           </div>
         </section>
+
+        <!-- ================= PAGE: EMPLOYEE MANAGEMENT ================= -->
+        <section id="page-employees" class="page">
+          <div class="employee-page-top">
+            <div>
+              <h2 class="section-title">Employee Management</h2>
+              <p class="section-caption">Add, edit, or remove employee accounts.</p>
+            </div>
+            <div class="employee-count" id="employeeCount">0 employees</div>
+          </div>
+
+          <div class="panel employee-form-panel" id="employeeFormPanel">
+            <div class="panel-header">
+              <div>
+                <h3 class="panel-title" id="employeeFormTitle">Add employee</h3>
+                <div class="panel-caption">Create an account with a username and a four-digit password.</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <form id="employeeForm">
+                <input type="hidden" id="employeeId" />
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="employeeUsername">Username</label>
+                    <input type="text" id="employeeUsername" maxlength="40" autocomplete="off" required />
+                  </div>
+                  <div class="field">
+                    <label for="employeePin">Password (4 digits)</label>
+                    <input type="password" id="employeePin" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="new-password" />
+                    <div class="employee-form-note" id="employeePinHint">Required for a new account; leave empty when editing to keep the current password.</div>
+                  </div>
+                  <div class="field">
+                    <label for="employeeRole">Role</label>
+                    <select id="employeeRole">
+                      <option value="employee">Employee</option>
+                      <option value="admin">Responsible</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button class="primary-button" type="submit" id="saveEmployeeBtn">Add employee</button>
+                  <button class="secondary-button" type="button" id="cancelEmployeeEdit" style="display:none">Cancel edit</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="employee-cards" id="employeeListBody"></div>
+          <div class="empty-state employee-empty" id="employeeEmpty" style="display:none">
+            <div class="emoji">👥</div>No employees yet.
+          </div>
+        </section>
       </main>
     </div>
 
@@ -874,17 +1208,22 @@
       <button class="nav-fab" id="navSearchBtn" aria-label="Quick search"><span class="nav-icon">🔍</span><span class="nav-label">Quick Search</span></button>
       <button class="nav-btn" data-page="parts"><span class="nav-icon">🔧</span>Parts</button>
       <button class="nav-btn" data-page="admin"><span class="nav-icon">📊</span>Admin</button>
+      <button class="nav-btn desktop-nav-employee" id="navEmployees" data-page="employees" type="button"><span class="nav-icon">👥</span>Employees</button>
+      <button class="nav-btn nav-logout desktop-only-nav" id="navLogout" type="button"><span class="nav-icon">↪️</span>Sign out</button>
     </nav>
 
     <!-- ===== Drawer (burger menu) ===== -->
     <div class="drawer-overlay" id="drawerOverlay">
       <div class="drawer">
         <h3>More Options</h3>
+        <div class="current-user-chip">Signed in as <strong id="currentUserLabel">—</strong></div>
+        <button class="drawer-item admin-only" id="drawerEmployees"><span class="di-icon">👥</span> Employee Management</button>
         <button class="drawer-item" id="drawerExport"><span class="di-icon">⬇️</span> Export Inventory (CSV)</button>
         <button class="drawer-item" id="drawerTheme"><span class="di-icon">🌓</span> Toggle Theme (Light/Dark)</button>
         <button class="drawer-item" id="drawerHome"><span class="di-icon">🏠</span> Go to Home</button>
+        <button class="drawer-item" id="drawerLogout"><span class="di-icon">↪️</span> Sign out</button>
         <button class="drawer-item danger-button" id="drawerClearAll" style="border:0;border-bottom:1px solid var(--border);border-radius:0;justify-content:flex-start"><span class="di-icon">🗑️</span> Delete All Data</button>
-        <div class="drawer-note">This menu can be expanded — more options like users, permissions, or settings can be added here later.</div>
+        <div class="drawer-note">Employee Management is visible to the responsible user only.</div>
       </div>
     </div>
 
@@ -993,6 +1332,10 @@
         const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
         const THEME_KEY = "gearvault_ar_theme";
+        // Supabase Auth projects commonly require passwords to be at least six
+        // characters. Employees still enter exactly four digits; this private
+        // application suffix only satisfies Auth's minimum-length requirement.
+        const AUTH_PASSWORD_SUFFIX = "QPX-Account-2026!";
 
         // ===== Supabase =====
         const SUPABASE_URL = "https://qgdeuciwcpzmkvxfnssk.supabase.co";
@@ -1106,6 +1449,191 @@
           formDirection: "",
           scanner: { running: false, mode: null, stream: null, controls: null, animationId: null, target: "warehouse" },
         };
+        const authState = { session: null, profile: null };
+        let appBootstrapped = false;
+         let authSequenceLocked = false;
+
+        // ===== Employee authentication =====
+        function authStatus(message, ok = false) {
+          const el = $("#authStatus");
+          el.textContent = message || "";
+          el.classList.toggle("show", Boolean(message));
+          el.classList.toggle("ok", ok);
+        }
+        function authPinInputs() { return $$(".auth-slot input"); }
+        function authPinValue() { return authPinInputs().map((input) => input.value).join(""); }
+        function resetAuthPin() {
+           authSequenceLocked = false;
+           authPinInputs().forEach((input) => {
+             input.value = "";
+             input.closest(".auth-slot").classList.remove("filled", "glowing");
+             input.disabled = false;
+             input.style.pointerEvents = "";
+           });
+          $("#authResult").classList.remove("show", "win", "bad");
+          $("#loginBtn").disabled = false;
+          authStatus("");
+           $$(".auth-slot").forEach((slot) => {
+             slot.getAnimations().forEach((animation) => animation.cancel());
+             slot.style.opacity = "";
+             slot.style.transform = "";
+           });
+         }
+         function resolveAuthSequence(isCorrect, message, onComplete) {
+           authSequenceLocked = true;
+           const inputs = authPinInputs();
+           const slots = $$(".auth-slot");
+           const result = $("#authResult");
+           result.classList.remove("show", "win", "bad");
+           inputs.forEach((input) => { input.style.pointerEvents = "none"; });
+
+           // Match the supplied design: spread the four cards, then converge them into one verdict.
+           const dx = [-30, -10, 10, 30];
+           const angles = [-16, -6, 6, 16];
+           const homeAngles = [-7, -3, 3, 7];
+           const spreadEnd = 560 + 3 * 45;
+
+           slots.forEach((slot, index) => {
+             slot.animate([
+               { transform: "translate(0px) rotate(0deg)" },
+               { transform: `translate(${dx[index]}px) rotate(${angles[index]}deg)` }
+             ], { duration: 560, delay: index * 45, easing: "cubic-bezier(.22,.8,.25,1)", fill: "forwards" });
+           });
+
+           setTimeout(() => {
+             slots.forEach((slot, index) => {
+               slot.animate([
+                 { transform: `translate(${dx[index]}px) rotate(${angles[index]}deg)`, offset: 0 },
+                 { transform: `translate(0px) rotate(${homeAngles[index]}deg)`, opacity: 1, offset: .78 },
+                 { transform: "translate(0px) rotate(0deg)", opacity: 0, offset: 1 }
+               ], { duration: 460, delay: (3 - index) * 40, easing: "cubic-bezier(.3,.7,.25,1)", fill: "forwards" });
+             });
+
+             const convergeEnd = 460 + 3 * 40;
+             setTimeout(() => {
+               result.classList.add("show", isCorrect ? "win" : "bad");
+               authStatus(isCorrect ? "Signed in successfully." : (message || "The username or password is incorrect."), isCorrect);
+               if (isCorrect && typeof onComplete === "function") setTimeout(onComplete, 520);
+             }, convergeEnd + 30);
+           }, spreadEnd + 120);
+
+           if (!isCorrect) {
+             setTimeout(resetAuthPin, spreadEnd + 120 + 460 + 3 * 40 + 30 + 3200);
+           }
+        }
+         function isAdminProfile() {
+           return String(authState.profile && authState.profile.role || "").trim().toLowerCase() === "admin";
+         }
+         function setAuthenticatedUi() {
+           const isAdmin = isAdminProfile();
+          $("#currentUserLabel").textContent = authState.profile ? authState.profile.username : "—";
+           $("#drawerEmployees").classList.toggle("visible", isAdmin);
+           $("#navEmployees").classList.toggle("admin-visible", isAdmin);
+        }
+        async function loadEmployeeProfile(userId) {
+          const { data, error } = await sb.from("employees")
+            .select("id,auth_user_id,username,role,is_active,created_at")
+            .eq("auth_user_id", userId).eq("is_active", true).maybeSingle();
+          if (error) { console.error(error); return null; }
+          return data || null;
+        }
+        function revealApplication() {
+          $("#authScreen").hidden = true;
+          $("#appContent").hidden = false;
+          setAuthenticatedUi();
+        }
+        function showAuthentication() {
+          $("#authScreen").hidden = false;
+          $("#appContent").hidden = true;
+          resetAuthPin();
+          setTimeout(() => $("#loginUsername").focus(), 80);
+        }
+        async function submitLogin() {
+           if (authSequenceLocked) return;
+          const username = $("#loginUsername").value.trim();
+          const pin = authPinValue();
+          if (!username) { authStatus("Enter your username first."); $("#loginUsername").focus(); return; }
+          if (!/^\d{4}$/.test(pin)) { authStatus("The password must contain exactly four digits."); return; }
+          const button = $("#loginBtn");
+          button.disabled = true;
+          authPinInputs().forEach((input) => { input.disabled = true; });
+          authStatus("Checking your credentials…");
+          const { data: identity, error: identityError } = await sb.rpc("get_employee_login_identity", { p_username: username });
+          const identityRow = Array.isArray(identity) ? identity[0] : identity;
+          if (identityError || !identityRow || !identityRow.auth_email) {
+             resolveAuthSequence(false);
+            return;
+          }
+          const { data, error } = await sb.auth.signInWithPassword({ email: identityRow.auth_email, password: `${pin}${AUTH_PASSWORD_SUFFIX}` });
+          if (error || !data.session) {
+            console.error(error);
+             resolveAuthSequence(false);
+            return;
+          }
+          const profile = await loadEmployeeProfile(data.user.id);
+          if (!profile) {
+            await sb.auth.signOut();
+             resolveAuthSequence(false, "This account is inactive or is not registered as an employee.");
+            return;
+          }
+          authState.session = data.session;
+          authState.profile = profile;
+           resolveAuthSequence(true, "", async () => {
+            revealApplication();
+            await startApplication();
+           });
+        }
+        function pulseAuthSlot(index) {
+          const slot = authPinInputs()[index].closest(".auth-slot");
+          slot.classList.remove("glowing"); void slot.offsetWidth; slot.classList.add("glowing");
+        }
+        function wireAuthenticationForm() {
+          const inputs = authPinInputs();
+          inputs.forEach((input, index) => {
+            input.addEventListener("input", (event) => {
+               if (authSequenceLocked) return;
+              const value = event.target.value.replace(/\D/g, "").slice(0, 1);
+              event.target.value = value;
+              event.target.closest(".auth-slot").classList.toggle("filled", Boolean(value));
+              if (value) { pulseAuthSlot(index); if (inputs[index + 1]) inputs[index + 1].focus(); }
+               if (inputs.every((authInput) => authInput.value)) submitLogin();
+            });
+            input.addEventListener("keydown", (event) => {
+               if (authSequenceLocked) return;
+              if (event.key === "Backspace" && !input.value && inputs[index - 1]) inputs[index - 1].focus();
+              if (event.key === "Enter") submitLogin();
+            });
+            input.addEventListener("paste", (event) => {
+               if (authSequenceLocked) return;
+              event.preventDefault();
+              const text = (event.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "").slice(0, 4);
+              text.split("").forEach((digit, i) => {
+                if (!inputs[i]) return;
+                inputs[i].value = digit; inputs[i].closest(".auth-slot").classList.add("filled"); pulseAuthSlot(i);
+              });
+              if (text.length) inputs[Math.min(text.length, 3)].focus();
+               if (inputs.every((authInput) => authInput.value)) submitLogin();
+            });
+          });
+          $("#loginBtn").addEventListener("click", submitLogin);
+          $("#loginUsername").addEventListener("keydown", (event) => { if (event.key === "Enter") inputs[0].focus(); });
+          $("#authThemeToggle").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light"));
+        }
+        async function startApplication() {
+          if (appBootstrapped) return;
+          appBootstrapped = true;
+          await bootstrap();
+        }
+        async function initializeAuthentication() {
+          wireAuthenticationForm();
+          const { data } = await sb.auth.getSession();
+          if (!data.session) { showAuthentication(); return; }
+          const profile = await loadEmployeeProfile(data.session.user.id);
+          if (!profile) { await sb.auth.signOut(); showAuthentication(); authStatus("We could not verify this employee account."); return; }
+          authState.session = data.session; authState.profile = profile;
+          revealApplication();
+          await startApplication();
+        }
 
         // ===== Supabase data layer =====
         function rowToPart(row) {
@@ -1506,6 +2034,7 @@
           document.documentElement.dataset.theme = theme;
           const light = theme === "light";
           $("#themeIcon").textContent = light ? "☾" : "☼";
+          $("#authThemeIcon").textContent = light ? "☾" : "☼";
           localStorage.setItem(THEME_KEY, theme);
         }
         applyTheme(localStorage.getItem(THEME_KEY) || "dark");
@@ -1531,6 +2060,17 @@
           if (page === "warehouse") renderWarehouseList();
           if (page === "parts") renderPartsSearch();
           if (page === "admin") renderOptionsManager();
+          if (page === "employees" && !isAdminProfile()) {
+            showToast("Only a responsible user can manage employees.", true);
+            return switchPage("home");
+          }
+          if (page === "employees") {
+            resetEmployeeForm();
+            loadEmployeeList().catch((error) => {
+              console.error(error);
+              showToast(error.message || "Could not load employee accounts.", true);
+            });
+          }
         }
         $$(".nav-btn").forEach((btn) => btn.addEventListener("click", () => switchPage(btn.dataset.page)));
 
@@ -1939,15 +2479,139 @@
           });
         }
 
+        // ===================================================================
+        // EMPLOYEE MANAGEMENT — account creation/deletion is performed by the
+        // Supabase Edge Function so the service-role key never reaches the browser.
+        // ===================================================================
+        async function invokeEmployeeManager(action, payload = {}) {
+          const { data, error } = await sb.functions.invoke("manage-employee", { body: { action, ...payload } });
+          if (error) throw error;
+          if (data && data.error) throw new Error(data.error);
+          return data;
+        }
+        function resetEmployeeForm() {
+          $("#employeeId").value = "";
+          $("#employeeUsername").value = "";
+          $("#employeePin").value = "";
+          $("#employeeRole").value = "employee";
+          $("#employeeFormTitle").textContent = "Add employee";
+          $("#employeeFormPanel").classList.remove("is-editing");
+          $("#saveEmployeeBtn").textContent = "Add employee";
+          $("#cancelEmployeeEdit").style.display = "none";
+          $("#employeePinHint").textContent = "Required for a new account; leave empty when editing to keep the current password.";
+        }
+        function renderEmployeeList(rows) {
+          const body = $("#employeeListBody");
+          $("#employeeEmpty").style.display = rows.length ? "none" : "block";
+          $("#employeeCount").textContent = `${rows.length} employee${rows.length === 1 ? "" : "s"}`;
+          body.innerHTML = rows.length ? rows.map((row) => `
+            <article class="employee-card">
+              <div class="employee-card-head">
+                <div class="employee-avatar" aria-hidden="true">${escapeHtml((row.username || "?").trim().charAt(0) || "?")}</div>
+                <div class="employee-card-identity">
+                  <h3 class="employee-card-name" title="${escapeHtml(row.username || "")}">${escapeHtml(row.username || "Unnamed employee")}</h3>
+                  <div class="employee-card-role">${row.role === "admin" ? "Responsible" : "Employee"} · <span class="employee-status ${row.is_active ? "active" : "inactive"}">${row.is_active ? "Active" : "Inactive"}</span></div>
+                </div>
+              </div>
+              <div class="employee-card-meta">
+                <div class="employee-card-meta-item">
+                  <span class="employee-card-meta-label">Created</span>
+                  <span class="employee-card-meta-value">${escapeHtml(row.created_at ? new Date(row.created_at).toLocaleDateString("en-GB") : "—")}</span>
+                </div>
+                <div class="employee-card-meta-item">
+                  <span class="employee-card-meta-label">Account</span>
+                  <span class="employee-card-meta-value">${row.is_active ? "Ready to use" : "Inactive"}</span>
+                </div>
+              </div>
+              <div class="employee-card-footer">
+                <button class="secondary-button" type="button" data-edit-employee="${escapeHtml(row.id)}">✏️ Edit</button>
+                <button class="danger-button" type="button" data-delete-employee="${escapeHtml(row.id)}">🗑️ Delete</button>
+              </div>
+            </article>`).join("") : "";
+        }
+        async function loadEmployeeList() {
+          const result = await invokeEmployeeManager("list");
+          const rows = (result && result.employees) || [];
+          renderEmployeeList(rows);
+          return rows;
+        }
+        async function openEmployeeManagement() {
+          if (!isAdminProfile()) {
+            showToast("Only a responsible user can manage employees.", true);
+            return;
+          }
+          closeDrawer();
+          switchPage("employees");
+        }
+        $("#cancelEmployeeEdit").addEventListener("click", resetEmployeeForm);
+        $("#employeeForm").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const id = $("#employeeId").value;
+          const username = $("#employeeUsername").value.trim();
+          const pin = $("#employeePin").value.trim();
+          const role = $("#employeeRole").value;
+          if (!username) return showToast("Enter a username.", true);
+          if (pin && !/^\d{4}$/.test(pin)) return showToast("The password must contain exactly four digits.", true);
+          if (!id && !pin) return showToast("A four-digit password is required for a new employee.", true);
+          const button = $("#saveEmployeeBtn");
+          button.disabled = true;
+          try {
+            await invokeEmployeeManager(id ? "update" : "create", id ? { id, username, role, pin: pin || undefined } : { username, role, pin });
+            resetEmployeeForm();
+            await loadEmployeeList();
+            showToast(id ? "Employee updated." : "Employee added.");
+          } catch (error) {
+            console.error(error);
+            showToast(error.message || "Could not save the employee.", true);
+          } finally { button.disabled = false; }
+        });
+        $("#employeeListBody").addEventListener("click", async (event) => {
+          const edit = event.target.closest("[data-edit-employee]");
+          if (edit) {
+            const { data, error } = await sb.from("employees").select("id,username,role").eq("id", edit.dataset.editEmployee).maybeSingle();
+            if (error || !data) return showToast("Could not load that employee.", true);
+            $("#employeeId").value = data.id; $("#employeeUsername").value = data.username;
+            $("#employeeRole").value = data.role; $("#employeePin").value = "";
+            $("#employeeFormTitle").textContent = "Edit employee";
+            $("#employeeFormPanel").classList.add("is-editing");
+            $("#saveEmployeeBtn").textContent = "Update employee";
+            $("#cancelEmployeeEdit").style.display = "inline-flex";
+            $("#employeePinHint").textContent = "Optional: enter a new four-digit password, or leave it empty to keep the current one.";
+            $("#employeeUsername").focus();
+            return;
+          }
+          const remove = event.target.closest("[data-delete-employee]");
+          if (!remove) return;
+          if (!window.confirm("Delete this employee account permanently?")) return;
+          try {
+            await invokeEmployeeManager("delete", { id: remove.dataset.deleteEmployee });
+            await loadEmployeeList();
+            showToast("Employee deleted.");
+          } catch (error) {
+            console.error(error);
+            showToast(error.message || "Could not delete the employee.", true);
+          }
+        });
+
         // ===== Drawer =====
         const drawerOverlay = $("#drawerOverlay");
         function openDrawer() { drawerOverlay.classList.add("open"); }
         function closeDrawer() { drawerOverlay.classList.remove("open"); }
-        $("#menuBtn").addEventListener("click", openDrawer);
+        $("#menuBtn").addEventListener("click", () => { setAuthenticatedUi(); openDrawer(); });
         drawerOverlay.addEventListener("click", (e) => { if (e.target === drawerOverlay) closeDrawer(); });
         $("#drawerHome").addEventListener("click", () => switchPage("home"));
+        $("#drawerEmployees").addEventListener("click", openEmployeeManagement);
         $("#drawerTheme").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light"));
         $("#themeToggle").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light"));
+        $("#headerTheme").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light"));
+        $("#headerExport").addEventListener("click", exportCSV);
+        async function signOutAndReload() {
+          closeDrawer();
+          await sb.auth.signOut();
+          window.location.reload();
+        }
+        $("#drawerLogout").addEventListener("click", signOutAndReload);
+        $("#navLogout").addEventListener("click", signOutAndReload);
         $("#drawerExport").addEventListener("click", exportCSV);
         $("#drawerClearAll").addEventListener("click", async () => {
           if (!state.inventory.length && !state.transactions.length) return showToast("No data to delete.", true);
@@ -3046,8 +3710,9 @@
           renderWarehouseList();
           showToast("Data loaded.");
         }
-        bootstrap();
+        initializeAuthentication();
       })();
     </script>
+    </div>
   </body>
 </html>
