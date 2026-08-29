@@ -146,12 +146,6 @@
       .field.span-2 { grid-column: span 2; }
       .field label { font-size: .78rem; font-weight: 700; color: var(--muted-strong); }
       .field .hint { font-size: .68rem; color: var(--muted); }
-      .migration-warning { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: rgba(247,201,105,.12); border: 1px solid rgba(247,201,105,.4); color: var(--text); font-size: .8rem; line-height: 1.6; }
-      .migration-warning.attention { animation: mw-pulse 0.6s ease 2; }
-      @keyframes mw-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(247,201,105,0); } 50% { box-shadow: 0 0 0 6px rgba(247,201,105,.25); } }
-      .migration-warning .mw-title { color: var(--warning); font-weight: 800; display: block; margin-bottom: 4px; }
-      .migration-warning pre { margin: 10px 0 0; padding: 10px 12px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; font-size: .72rem; white-space: pre-wrap; word-break: break-word; direction: ltr; text-align: left; color: var(--text); overflow-x: auto; }
-      .migration-warning .mw-actions { margin-top: 10px; }
       input[type=text], input[type=number], input[type=date], input[type=search], select, textarea {
         border: 1px solid var(--border); border-radius: 12px; background: var(--bg-soft); color: var(--text);
         padding: 11px 12px; width: 100%;
@@ -367,10 +361,16 @@
       .expand-toggle.expanded .expand-arrow { transform: rotate(180deg); }
 
       /* custom fields admin */
+      .custom-fields-status { display: flex; align-items: center; gap: 8px; min-height: 34px; margin-bottom: 14px; padding: 9px 12px; border: 1px solid rgba(66,201,143,.28); border-radius: 10px; background: rgba(66,201,143,.08); color: var(--muted-strong); font-size: .74rem; }
+      .custom-fields-status.error { border-color: rgba(255,127,145,.42); background: rgba(255,127,145,.08); color: var(--danger); }
+      .custom-fields-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
       .custom-field-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
       .custom-field-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
       .custom-field-name { font-weight: 700; font-size: .85rem; }
       .custom-field-meta { font-size: .68rem; color: var(--muted); }
+      .custom-field-actions { display: flex; gap: 6px; flex-shrink: 0; }
+      .custom-field-empty { color: var(--muted); font-size: .76rem; padding: 4px 0; }
+      .custom-fields-migration-hint { margin-top: 10px; }
 
       /* detail modal */
       .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 10px; margin: 14px 0; }
@@ -774,19 +774,20 @@
             </div>
           </div>
 
-          <div class="panel">
+          <div class="panel custom-fields-panel">
             <div class="panel-header">
               <div>
                 <h3 class="panel-title">Custom Fields</h3>
-                <div class="panel-caption">Add your own fields to the "Add New Part" form. A dropdown field can depend on Vehicle Make or Part Type — pick the parent value first, then add the choices that belong to it (e.g. Part Type "Sensors" → Engine Sensor, Gearbox Sensor, Front Sensor…).</div>
+                <div class="panel-caption">Create extra fields for the "Add New Part" form. Definitions and dropdown choices are stored in the database, not browser memory.</div>
               </div>
             </div>
             <div class="panel-body">
-              <div id="customFieldDefsList" style="margin-bottom:16px; display:flex; flex-direction:column; gap:8px;"></div>
+              <div class="custom-fields-status" id="customFieldsDbStatus" role="status">Checking custom-fields database storage…</div>
+              <div id="customFieldDefsList" class="custom-fields-list"></div>
               <div class="field-grid">
                 <div class="field">
-                  <label for="newFieldLabel">New field name</label>
-                  <input type="text" id="newFieldLabel" placeholder="e.g. Sensor Location" />
+                  <label for="newFieldLabel">Field name</label>
+                  <input type="text" id="newFieldLabel" placeholder="e.g. Sensor Location" maxlength="80" />
                 </div>
                 <div class="field">
                   <label for="newFieldType">Field type</label>
@@ -805,17 +806,11 @@
                 </div>
               </div>
               <div class="form-actions">
-                <button class="primary-button" type="button" id="addCustomFieldBtn">Add Field</button>
+                <button class="primary-button" type="button" id="saveCustomFieldBtn">Save Field</button>
+                <button class="secondary-button" type="button" id="cancelCustomFieldBtn" style="display:none">Cancel Edit</button>
               </div>
-              <div class="migration-warning" id="customFieldsMigrationHint" style="display:none;">
-                <span class="mw-title">⚠️ One-time database update needed</span>
-                Your Supabase database is missing the <code>custom_fields</code> column, so custom field values only stay on this device/session and don't reach other devices. Open your Supabase project → <strong>SQL Editor</strong> → run this once (safe to run more than once):
-                <pre id="customFieldsMigrationSql">alter table parts add column if not exists custom_fields jsonb default '{}'::jsonb;
-alter table options add column if not exists custom_fields jsonb default '{}'::jsonb;
-notify pgrst, 'reload schema';</pre>
-                <div class="mw-actions">
-                  <button type="button" class="secondary-button" id="copyMigrationSqlBtn">📋 Copy SQL</button>
-                </div>
+              <div class="hint custom-fields-migration-hint" id="customFieldsMigrationHint" style="display:none;">
+                Database setup is incomplete. Run <code>custom_fields_migration.sql</code> in the Supabase SQL editor, then refresh this page.
               </div>
             </div>
           </div>
@@ -1134,63 +1129,32 @@ notify pgrst, 'reload schema';</pre>
             updated_at: values.updatedAt, custom_fields: values.customFields || {},
           };
         }
-        // Some Supabase projects won't have the newer "custom_fields" column yet
-        // (it needs a one-time migration — see the note in Admin ▸ Custom Fields).
-        // These helpers detect that specific failure and retry without it, so the
-        // rest of the app keeps working until the column is added.
+        // Custom-field values live on parts.custom_fields. Field definitions and
+        // dropdown choices live in their own table so saving a field cannot be
+        // lost inside the general options row.
         function isMissingColumnError(error, column) {
-          if (!error) return false;
-          // PGRST204 = PostgREST "column not found in schema cache"; 42703 = Postgres "undefined_column".
-          if (error.code === "PGRST204" || error.code === "42703") return true;
-          const msg = `${error.message || ""} ${error.details || ""} ${error.hint || ""}`.toLowerCase();
+          const msg = `${(error && error.message) || ""} ${(error && error.details) || ""} ${(error && error.hint) || ""}`.toLowerCase();
           return msg.includes(column) && (msg.includes("column") || msg.includes("schema cache"));
         }
+        function isMissingTableError(error, table) {
+          const msg = `${(error && error.message) || ""} ${(error && error.details) || ""} ${(error && error.hint) || ""}`.toLowerCase();
+          return msg.includes(table.toLowerCase()) && (msg.includes("relation") || msg.includes("table") || msg.includes("schema cache"));
+        }
         let customFieldsMigrationNoticeShown = false;
-        // Holds the exact raw error text from the most recent blocked save, so
-        // it can be shown directly in the toast the user actually sees — the
-        // yellow info box may have been removed from this build, so nothing
-        // should depend on that box existing.
-        let lastCustomFieldsMigrationDetail = "";
-        // `detail` (optional) is the raw Postgres/PostgREST error we caught right
-        // before assuming it meant "column missing" — shown in the warning box so
-        // it's possible to tell a genuinely-missing column apart from something
-        // else (like a permissions error) that happens to mention "column" too.
-        function notifyCustomFieldsMigrationNeeded(detail) {
-          lastCustomFieldsMigrationDetail = detail || "";
-          const hint = document.getElementById("customFieldsMigrationHint");
-          if (hint) {
-            hint.style.display = "block";
-            if (detail) {
-              let detailEl = hint.querySelector(".mw-detail");
-              if (!detailEl) {
-                detailEl = document.createElement("div");
-                detailEl.className = "mw-detail";
-                detailEl.style.cssText = "margin-top:8px;font-size:.72rem;color:var(--muted);direction:ltr;text-align:left;";
-                hint.appendChild(detailEl);
-              }
-              detailEl.textContent = `Technical detail (send this to support if the SQL fix doesn't help): ${detail}`;
-            }
-          }
+        function setCustomFieldsStorageStatus(message, isError = false) {
+          const status = document.getElementById("customFieldsDbStatus");
+          if (!status) return;
+          status.textContent = message;
+          status.classList.toggle("error", isError);
+        }
+        function notifyCustomFieldsMigrationNeeded(message = "Database setup is incomplete. Run custom_fields_migration.sql in Supabase, then refresh this page.") {
           if (customFieldsMigrationNoticeShown) return;
           customFieldsMigrationNoticeShown = true;
-          showToast("Custom fields need a quick one-time database update — see Admin ▸ Custom Fields.", true);
+          showToast("Custom fields need the one-time database setup.", true);
+          const hint = document.getElementById("customFieldsMigrationHint");
+          if (hint) hint.style.display = "block";
+          setCustomFieldsStorageStatus(message, true);
         }
-        // Proactively checks (on every load, on every device) whether the database
-        // actually has the custom_fields column yet, instead of only finding out
-        // the hard way the next time someone tries to save a custom field. This is
-        // what makes the warning show up for every admin, not just whoever first
-        // hit the save error.
-        async function checkCustomFieldsColumnSupport() {
-          try {
-            const { error } = await sb.from("options").select("custom_fields").limit(1);
-            if (error && isMissingColumnError(error, "custom_fields")) { notifyCustomFieldsMigrationNeeded(`${error.code || "?"} ${error.message || ""}`.trim()); return; }
-          } catch (e) { /* ignore — network/other errors are handled elsewhere */ }
-          try {
-            const { error } = await sb.from("parts").select("custom_fields").limit(1);
-            if (error && isMissingColumnError(error, "custom_fields")) { notifyCustomFieldsMigrationNeeded(`${error.code || "?"} ${error.message || ""}`.trim()); }
-          } catch (e) { /* ignore */ }
-        }
-
         // Offline fallback: cache the last successful fetch locally so the app can
         // still show inventory if the connection to the database drops.
         const OFFLINE_INVENTORY_KEY = "qpx-offline-inventory";
@@ -1236,6 +1200,53 @@ notify pgrst, 'reload schema';</pre>
             customFieldOptions: (rawCustom.options && typeof rawCustom.options === "object") ? rawCustom.options : {},
           };
         }
+        function normalizeCustomFieldDef(row, index = 0) {
+          const type = row && row.field_type === "dropdown" ? "dropdown" : "text";
+          const dependsOn = type === "dropdown" && ["vehicle", "category"].includes(row && row.depends_on) ? row.depends_on : "";
+          const id = String((row && row.id) || "").trim();
+          const label = String((row && row.label) || "").trim();
+          if (!id || !label) return null;
+          return {
+            id, label, type, dependsOn,
+            sortOrder: Number.isFinite(Number(row && row.sort_order)) ? Number(row.sort_order) : index,
+          };
+        }
+        async function fetchCustomFieldConfig(legacyConfig) {
+          const fallback = legacyConfig || { defs: [], options: {} };
+          const { data, error } = await sb.from("custom_field_definitions")
+            .select("id,label,field_type,depends_on,options,sort_order")
+            .order("sort_order", { ascending: true })
+            .order("created_at", { ascending: true });
+          if (error) {
+            console.error(error);
+            notifyCustomFieldsMigrationNeeded(
+              isMissingTableError(error, "custom_field_definitions")
+                ? "Run custom_fields_migration.sql in Supabase to enable permanent custom-field storage."
+                : "Custom-field storage could not be read. Check the table permissions, then refresh."
+            );
+            return fallback;
+          }
+          const defs = (data || []).map(normalizeCustomFieldDef).filter(Boolean);
+          const options = {};
+          (data || []).forEach((row) => {
+            const def = normalizeCustomFieldDef(row);
+            if (!def) return;
+            options[def.id] = row.options && typeof row.options === "object" && !Array.isArray(row.options) ? row.options : {};
+          });
+          if (!defs.length && fallback.defs.length) {
+            let migrated = true;
+            for (const def of fallback.defs) {
+              state.options.customFieldOptions[def.id] = fallback.options[def.id] || {};
+              if (!(await persistCustomFieldDefinition(def, true))) migrated = false;
+            }
+            if (migrated) {
+              setCustomFieldsStorageStatus("Custom fields are saved in the database.");
+              return { defs: fallback.defs, options: fallback.options };
+            }
+          }
+          setCustomFieldsStorageStatus("Custom fields are saved in the database.");
+          return { defs, options };
+        }
         async function fetchTransactions() {
           const { data, error } = await sb.from("transactions").select("*").order("at", { ascending: false }).limit(500);
           if (error) {
@@ -1251,50 +1262,65 @@ notify pgrst, 'reload schema';</pre>
             vehicle: state.options.vehicle, category: state.options.category,
             position: state.options.position, direction: state.options.direction,
             model: state.options.model, year: state.options.year,
-            custom_fields: { defs: state.options.customFieldDefs || [], options: state.options.customFieldOptions || {} },
           };
-          let { error } = await sb.from("options").update(payload).eq("id", 1);
-          if (error && isMissingColumnError(error, "custom_fields")) {
-            const firstError = error;
-            delete payload.custom_fields;
-            ({ error } = await sb.from("options").update(payload).eq("id", 1));
-            if (!error) {
-              console.error("custom_fields save was blocked — raw error:", firstError);
-              notifyCustomFieldsMigrationNeeded(`${firstError.code || "?"} ${firstError.message || ""}`.trim());
-              return false;
-            }
+          const { error } = await sb.from("options").upsert({ id: 1, ...payload }, { onConflict: "id" });
+          if (error) { showToast("Failed to save options to the database.", true); console.error(error); }
+        }
+        async function persistCustomFieldDefinition(def, quiet = false) {
+          const index = (state.options.customFieldDefs || []).findIndex((f) => f.id === def.id);
+          const row = {
+            id: def.id,
+            label: def.label,
+            field_type: def.type,
+            depends_on: def.dependsOn || null,
+            options: (state.options.customFieldOptions || {})[def.id] || {},
+            sort_order: index < 0 ? (def.sortOrder || 0) : index,
+            updated_at: new Date().toISOString(),
+          };
+          const { error } = await sb.from("custom_field_definitions").upsert(row, { onConflict: "id" });
+          if (error) {
+            console.error(error);
+            if (!quiet) notifyCustomFieldsMigrationNeeded("The custom-field table could not be saved. Run custom_fields_migration.sql and check Supabase permissions.");
+            return false;
           }
-          if (error) { showToast("Failed to save options to the database.", true); console.error(error); return false; }
+          setCustomFieldsStorageStatus("Custom fields are saved in the database.");
+          return true;
+        }
+        async function deleteCustomFieldDefinition(id) {
+          const { error } = await sb.from("custom_field_definitions").delete().eq("id", id);
+          if (error) {
+            console.error(error);
+            notifyCustomFieldsMigrationNeeded("The custom-field table could not be updated. Check Supabase permissions, then refresh.");
+            return false;
+          }
           return true;
         }
         async function insertPart(part) {
           const row = { id: part.id, ...partToRow(part), created_at: part.createdAt };
           let { error } = await sb.from("parts").insert(row);
-          if (error && isMissingColumnError(error, "custom_fields")) {
-            const firstError = error;
+          if (error && isMissingColumnError(error, "custom_fields") && !Object.keys(part.customFields || {}).some((key) => part.customFields[key])) {
             delete row.custom_fields;
             ({ error } = await sb.from("parts").insert(row));
-            if (!error) {
-              console.error("custom_fields save was blocked — raw error:", firstError);
-              notifyCustomFieldsMigrationNeeded(`${firstError.code || "?"} ${firstError.message || ""}`.trim());
-            }
+            if (!error) notifyCustomFieldsMigrationNeeded("Run custom_fields_migration.sql before saving custom values.");
           }
-          if (error) { showToast("Failed to save the part to the database.", true); console.error(error); return false; }
+          if (error) {
+            if (isMissingColumnError(error, "custom_fields")) notifyCustomFieldsMigrationNeeded("Run custom_fields_migration.sql before saving custom values.");
+            showToast("Failed to save the part to the database.", true); console.error(error); return false;
+          }
           return true;
         }
         async function updatePartRemote(id, values) {
           const row = partToRow(values);
           let { error } = await sb.from("parts").update(row).eq("id", id);
-          if (error && isMissingColumnError(error, "custom_fields")) {
-            const firstError = error;
+          if (error && isMissingColumnError(error, "custom_fields") && !Object.keys(values.customFields || {}).some((key) => values.customFields[key])) {
             delete row.custom_fields;
             ({ error } = await sb.from("parts").update(row).eq("id", id));
-            if (!error) {
-              console.error("custom_fields save was blocked — raw error:", firstError);
-              notifyCustomFieldsMigrationNeeded(`${firstError.code || "?"} ${firstError.message || ""}`.trim());
-            }
+            if (!error) notifyCustomFieldsMigrationNeeded("Run custom_fields_migration.sql before saving custom values.");
           }
-          if (error) { showToast("Failed to update the part in the database.", true); console.error(error); return false; }
+          if (error) {
+            if (isMissingColumnError(error, "custom_fields")) notifyCustomFieldsMigrationNeeded("Run custom_fields_migration.sql before saving custom values.");
+            showToast("Failed to update the part in the database.", true); console.error(error); return false;
+          }
           return true;
         }
         async function deletePartRemote(id) {
@@ -1491,9 +1517,7 @@ notify pgrst, 'reload schema';</pre>
           toast.classList.toggle("error", isError);
           toast.classList.add("show");
           clearTimeout(showToast.timeout);
-          // Error toasts (like a raw database diagnostic message) get more time
-          // on screen so there's a real chance to read and screenshot them.
-          showToast.timeout = setTimeout(() => toast.classList.remove("show"), isError ? 7000 : 2600);
+          showToast.timeout = setTimeout(() => toast.classList.remove("show"), 2600);
         }
 
         // ===== Page navigation =====
@@ -1740,9 +1764,13 @@ notify pgrst, 'reload schema';</pre>
             const list = getOptionList(field, parentValue);
             const value = list[idx];
             if (!window.confirm(`Remove "${value}"?`)) return;
+            const previous = [...list];
             list.splice(idx, 1);
             setOptionList(field, parentValue, list);
-            await saveOptions();
+            const saved = field.startsWith("custom:")
+              ? await persistCustomFieldDefinition(getCustomFieldDef(field.slice(7)))
+              : (await saveOptions(), true);
+            if (!saved) { setOptionList(field, parentValue, previous); return; }
             renderOptionsManager(); refreshOptionDependents();
             return;
           }
@@ -1755,9 +1783,13 @@ notify pgrst, 'reload schema';</pre>
             if (next === null) return;
             const trimmed = next.trim();
             if (!trimmed) return;
+            const previous = [...list];
             list[idx] = trimmed;
             setOptionList(field, parentValue, list);
-            await saveOptions();
+            const saved = field.startsWith("custom:")
+              ? await persistCustomFieldDefinition(getCustomFieldDef(field.slice(7)))
+              : (await saveOptions(), true);
+            if (!saved) { setOptionList(field, parentValue, previous); return; }
             renderOptionsManager(); refreshOptionDependents();
           }
         });
@@ -1772,21 +1804,29 @@ notify pgrst, 'reload schema';</pre>
           if (list.some((o) => o.toLowerCase() === val.toLowerCase())) { showToast("This option already exists.", true); return; }
           list.push(val);
           setOptionList(field, parentValue, list);
-          const persisted = await saveOptions();
+          const saved = field.startsWith("custom:")
+            ? await persistCustomFieldDefinition(getCustomFieldDef(field.slice(7)))
+            : (await saveOptions(), true);
+          if (!saved) { list.pop(); return; }
           $("#newOptionInput").value = "";
           renderOptionsManager(); refreshOptionDependents();
-          if (persisted || !field.startsWith("custom:")) {
-            showToast(`Added "${val}".`);
-          } else {
-            const detailSuffix = lastCustomFieldsMigrationDetail ? ` [${lastCustomFieldsMigrationDetail}]` : "";
-            showToast(`"${val}" was added here, but it will disappear on refresh until the database is updated.${detailSuffix}`, true);
-          }
+          showToast(`Added "${val}".`);
         });
         $("#newOptionInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("#addOptionBtn").click(); } });
 
         // ===================================================================
-        // ADMIN — custom fields (add/remove whole fields on the part form)
+        // ADMIN — custom fields (persisted in custom_field_definitions)
         // ===================================================================
+        let editingCustomFieldId = null;
+        function resetCustomFieldEditor() {
+          editingCustomFieldId = null;
+          $("#newFieldLabel").value = "";
+          $("#newFieldType").value = "text";
+          $("#newFieldDepends").value = "";
+          $("#newFieldDependsWrap").style.display = "none";
+          $("#saveCustomFieldBtn").textContent = "Save Field";
+          $("#cancelCustomFieldBtn").style.display = "none";
+        }
         function renderCustomFieldDefsList() {
           const defs = state.options.customFieldDefs || [];
           $("#customFieldDefsList").innerHTML = defs.length
@@ -1796,26 +1836,45 @@ notify pgrst, 'reload schema';</pre>
                   <span class="custom-field-name">${escapeHtml(f.label)}</span>
                   <span class="custom-field-meta">${f.type === "dropdown" ? "Dropdown" : "Text"}${f.dependsOn ? ` · by ${PARENT_FIELD_LABELS[f.dependsOn]}` : ""}</span>
                 </div>
-                <button type="button" class="small-action subtract" data-remove-field="${escapeHtml(f.id)}">Delete</button>
+                <div class="custom-field-actions">
+                  <button type="button" class="small-action" data-edit-field="${escapeHtml(f.id)}">Edit</button>
+                  <button type="button" class="small-action subtract" data-remove-field="${escapeHtml(f.id)}">Delete</button>
+                </div>
               </div>`).join("")
-            : `<span class="hint">No custom fields yet — add one below.</span>`;
+            : `<span class="custom-field-empty">No custom fields yet — add the first one below.</span>`;
         }
         $("#newFieldType").addEventListener("change", () => {
           $("#newFieldDependsWrap").style.display = $("#newFieldType").value === "dropdown" ? "" : "none";
+          if ($("#newFieldType").value !== "dropdown") $("#newFieldDepends").value = "";
         });
         $("#customFieldDefsList").addEventListener("click", async (e) => {
+          const editBtn = e.target.closest("[data-edit-field]");
+          if (editBtn) {
+            const def = getCustomFieldDef(editBtn.dataset.editField);
+            if (!def) return;
+            editingCustomFieldId = def.id;
+            $("#newFieldLabel").value = def.label;
+            $("#newFieldType").value = def.type;
+            $("#newFieldDepends").value = def.dependsOn || "";
+            $("#newFieldDependsWrap").style.display = def.type === "dropdown" ? "" : "none";
+            $("#saveCustomFieldBtn").textContent = "Update Field";
+            $("#cancelCustomFieldBtn").style.display = "inline-flex";
+            $("#newFieldLabel").focus();
+            return;
+          }
           const btn = e.target.closest("[data-remove-field]");
           if (!btn) return;
           const id = btn.dataset.removeField;
           const def = getCustomFieldDef(id);
           if (!window.confirm(`Delete the "${def ? def.label : id}" field? Parts keep their saved value, but it will no longer show on the form.`)) return;
+          if (!(await deleteCustomFieldDefinition(id))) return;
           state.options.customFieldDefs = (state.options.customFieldDefs || []).filter((f) => f.id !== id);
           delete state.options.customFieldOptions[id];
-          await saveOptions();
+          if (editingCustomFieldId === id) resetCustomFieldEditor();
           renderCustomFieldDefsList(); populateOptionFieldSelect(); renderCustomFieldsForm();
           showToast("Field deleted.");
         });
-        $("#addCustomFieldBtn").addEventListener("click", async () => {
+        $("#saveCustomFieldBtn").addEventListener("click", async () => {
           const label = $("#newFieldLabel").value.trim();
           if (!label) return showToast("Enter a field name.", true);
           const type = $("#newFieldType").value;
@@ -1823,33 +1882,24 @@ notify pgrst, 'reload schema';</pre>
           let id = label.toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
           if (!id) id = uid().slice(0, 8);
           if (!state.options.customFieldDefs) state.options.customFieldDefs = [];
-          if (state.options.customFieldDefs.some((f) => f.id === id)) { showToast("A field with this name already exists.", true); return; }
-          state.options.customFieldDefs.push({ id, label, type, dependsOn });
+          const existing = editingCustomFieldId ? getCustomFieldDef(editingCustomFieldId) : null;
+          if (!existing && state.options.customFieldDefs.some((f) => f.id === id)) { showToast("A field with this name already exists.", true); return; }
+          const nextId = existing ? existing.id : id;
+          const next = { id: nextId, label, type, dependsOn };
           if (!state.options.customFieldOptions) state.options.customFieldOptions = {};
-          state.options.customFieldOptions[id] = {};
-          const persisted = await saveOptions();
-          $("#newFieldLabel").value = "";
-          $("#newFieldType").value = "text";
-          $("#newFieldDependsWrap").style.display = "none";
-          renderCustomFieldDefsList(); populateOptionFieldSelect(); renderCustomFieldsForm();
-          if (persisted) {
-            showToast(`Added field "${label}".`);
+          if (!state.options.customFieldOptions[nextId]) state.options.customFieldOptions[nextId] = {};
+          if (!(await persistCustomFieldDefinition(next))) return;
+          if (existing) {
+            const index = state.options.customFieldDefs.findIndex((f) => f.id === existing.id);
+            state.options.customFieldDefs[index] = next;
           } else {
-            const detailSuffix = lastCustomFieldsMigrationDetail ? ` Technical detail: ${lastCustomFieldsMigrationDetail}` : "";
-            showToast(`"${label}" was added here, but the database can't save it yet — it will disappear on refresh.${detailSuffix}`, true);
-            const hint = $("#customFieldsMigrationHint");
-            if (hint) { hint.scrollIntoView({ behavior: "smooth", block: "center" }); hint.classList.add("attention"); setTimeout(() => hint.classList.remove("attention"), 2400); }
+            state.options.customFieldDefs.push(next);
           }
+          resetCustomFieldEditor();
+          renderCustomFieldDefsList(); populateOptionFieldSelect(); renderCustomFieldsForm();
+          showToast(existing ? `Updated field "${label}".` : `Added field "${label}".`);
         });
-        $("#copyMigrationSqlBtn").addEventListener("click", async () => {
-          const sql = $("#customFieldsMigrationSql").textContent;
-          try {
-            await navigator.clipboard.writeText(sql);
-            showToast("SQL copied — paste it into the Supabase SQL Editor.");
-          } catch (e) {
-            showToast("Couldn't copy automatically — please select and copy the SQL manually.", true);
-          }
-        });
+        $("#cancelCustomFieldBtn").addEventListener("click", resetCustomFieldEditor);
 
         // ===================================================================
         // Custom fields rendered dynamically inside the "Add New Part" form
@@ -2979,6 +3029,12 @@ notify pgrst, 'reload schema';</pre>
           ]);
           state.inventory = inventory;
           state.options = options;
+          const customConfig = await fetchCustomFieldConfig({
+            defs: options.customFieldDefs || [],
+            options: options.customFieldOptions || {},
+          });
+          state.options.customFieldDefs = customConfig.defs || [];
+          state.options.customFieldOptions = customConfig.options || {};
           state.transactions = transactions;
           if (seedMissingModels()) await saveOptions();
           populateOptionFieldSelect();
@@ -2989,7 +3045,6 @@ notify pgrst, 'reload schema';</pre>
           switchPage("home");
           renderWarehouseList();
           showToast("Data loaded.");
-          checkCustomFieldsColumnSupport();
         }
         bootstrap();
       })();
