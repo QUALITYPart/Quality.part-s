@@ -708,41 +708,70 @@
       .orders-admin-view { display: none; }
       .orders-admin-view.visible { display: block !important; }
       .orders-employee-view.hidden { display: none !important; }
-      .orders-list { display: flex; flex-direction: column; gap: 12px; }
-      .order-card {
-        position: relative; display: flex; align-items: stretch; min-height: 148px; overflow: hidden;
-        border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel-solid);
-        box-shadow: var(--shadow); transition: border-color 160ms ease, transform 160ms ease;
+      .orders-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+      .orders-list .order-row-group, .orders-list .order-empty { grid-column: 1 / -1; }
+
+      /* Search-results dropdown — appears directly under an orders search box, curtain-style */
+      .order-search-dropdown {
+        max-height: 0; opacity: 0; overflow: hidden; border-radius: var(--radius);
+        background: var(--panel-solid); box-shadow: var(--shadow);
+        transition: max-height 260ms ease, opacity 200ms ease, margin-top 260ms ease, border-color 200ms ease;
+        border: 1px solid transparent; margin-top: 0;
       }
-      .order-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
-      .order-card-media { width: 180px; min-height: 148px; flex: 0 0 180px; background: var(--bg-soft); cursor: zoom-in; }
-      .order-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-      .order-card-placeholder { width: 100%; height: 100%; min-height: 148px; display: grid; place-items: center; font-size: 2rem; opacity: .48; }
-      .order-card-scroll { display: flex; align-items: center; gap: 22px; flex: 1; min-width: 0; overflow-x: auto; padding: 16px 18px; cursor: grab; scrollbar-width: thin; }
-      .order-card-scroll.dragging { cursor: grabbing; }
-      .order-card-scroll > .order-main { min-width: 185px; flex: 0 0 185px; }
-      .order-main h4 { margin: 0; font-size: 1rem; font-weight: 850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .order-part { margin-top: 3px; color: var(--accent); font-weight: 800; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .order-id { margin-top: 8px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .66rem; }
-      .order-field { min-width: 105px; flex: 0 0 auto; display: flex; flex-direction: column; gap: 2px; }
-      .order-field .k { color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-size: .62rem; font-weight: 800; white-space: nowrap; }
-      .order-field .v { color: var(--text); font-size: .8rem; font-weight: 700; white-space: nowrap; max-width: 185px; overflow: hidden; text-overflow: ellipsis; }
-      .order-fixed-status { width: 154px; flex: 0 0 154px; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 14px 12px; border-left: 1px solid var(--border); background: var(--panel-solid); }
+      .order-search-dropdown.open { max-height: 2400px; opacity: 1; margin-top: 12px; border-color: var(--border); margin-bottom: 18px; }
+      .order-search-dropdown .orders-list { padding: 10px; margin: 0; }
+      .order-search-dropdown .order-empty { margin: 10px; grid-column: auto; }
+      .order-search-count { padding: 10px 14px 0 14px; font-size: .68rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+
+      /* Home page copy of the orders summary + search block — responsible user only */
+      .home-orders-block { display: none; margin-bottom: 22px; }
+      .home-orders-block.visible { display: block; }
+
+      /* Big card — used only for new / not-yet-reviewed order requests (status = requested) */
+      .order-card-big {
+        border: 1px solid var(--border); background: var(--panel); border-radius: var(--radius); overflow: hidden;
+        box-shadow: var(--shadow); display: flex; flex-direction: column; cursor: pointer; transition: 140ms ease;
+      }
+      .order-card-big:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+      .ocb-media { position: relative; height: 168px; background: var(--bg-soft); cursor: zoom-in; flex-shrink: 0; }
+      .ocb-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .ocb-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2.4rem; opacity: .45; }
+      .ocb-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+      .ocb-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+      .ocb-title { margin: 0; font-size: 1.02rem; font-weight: 850; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .ocb-num { flex-shrink: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .66rem; font-weight: 800; padding: 3px 9px; border-radius: 999px; background: var(--bg-soft); border: 1px solid var(--border); color: var(--muted-strong); white-space: nowrap; }
+      .ocb-sub { color: var(--muted-strong); font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .ocb-sub strong { color: var(--text); }
+      .ocb-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+      .ocb-info-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+      .ocb-info-item .l { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+      .ocb-info-item .v { font-size: .82rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .ocb-footer { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .ocb-date { flex-shrink: 0; font-size: .68rem; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .ocb-note { flex: 1; min-width: 0; font-size: .74rem; color: var(--muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+      /* Row group — orders past "requested" render as a compact scrollable list, like the Home page item rows */
+      .order-row-group { border: 1px solid var(--border); background: var(--panel-solid); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+      .order-list-row { cursor: pointer; }
+      .order-row-num { margin-left: 6px; font-size: .62rem; font-weight: 700; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .order-row-badge { flex-direction: column; gap: 3px; min-width: 76px; padding: 8px 10px; }
+      .order-row-employee { font-size: .64rem; font-weight: 700; color: var(--muted-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 92px; text-align: center; }
+
       .order-status-pill { display: inline-flex; align-items: center; justify-content: center; width: fit-content; max-width: 100%; padding: 5px 9px; border-radius: 999px; font-size: .68rem; font-weight: 850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .order-status-pill.mini { font-size: .6rem; padding: 3px 8px; }
       .order-status-pill.requested { color: var(--warning); background: rgba(247,201,105,.15); }
       .order-status-pill.received, .order-status-pill.processing { color: var(--blue); background: rgba(125,183,255,.15); }
       .order-status-pill.delivery, .order-status-pill.arrived, .order-status-pill.completed { color: var(--accent-strong); background: rgba(66,201,143,.15); }
       .order-status-pill.delayed, .order-status-pill.postponed { color: var(--warning); background: rgba(247,201,105,.15); }
       .order-status-pill.not-arrived, .order-status-pill.cancelled, .order-status-pill.rejected { color: var(--danger); background: rgba(255,127,145,.15); }
-      .order-requester { color: var(--muted); font-size: .68rem; line-height: 1.35; white-space: normal; }
-      .order-requester strong { color: var(--text); display: block; font-size: .74rem; }
-      .order-admin-actions { width: 178px; flex: 0 0 178px; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 12px; border-left: 1px solid var(--border); background: var(--bg-soft); }
-      .order-admin-actions select { min-height: 36px; padding: 7px 8px; font-size: .72rem; }
-      .order-admin-actions button { min-height: 34px; padding: 0 9px; font-size: .7rem; }
+
+      .order-detail-admin-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+      .order-detail-admin-row select { min-height: 38px; padding: 8px 10px; font-size: .8rem; flex: 1 1 170px; }
+      .order-detail-admin-row button { flex: 0 0 auto; }
+
       .order-section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 22px 0 10px; }
       .order-section-title h3 { margin: 0; font-size: .98rem; }
       .order-section-title span { color: var(--muted); font-size: .72rem; }
-      .order-note-preview { color: var(--muted); font-size: .72rem; max-width: 230px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .order-detail-photo { width: 96px; height: 76px; border-radius: 10px; object-fit: cover; cursor: zoom-in; border: 1px solid var(--border); }
       .order-empty { border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 28px; color: var(--muted); text-align: center; }
       .order-empty .emoji { font-size: 1.7rem; margin-bottom: 6px; }
@@ -750,20 +779,8 @@
       .order-summary-box { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-soft); padding: 12px; }
       .order-summary-box .v { font-size: 1.35rem; font-weight: 850; }
       .order-summary-box .l { color: var(--muted); font-size: .68rem; margin-top: 2px; }
-      @media (max-width: 820px) {
-        .order-card-media { width: 120px; flex-basis: 120px; }
-        .order-admin-actions { width: 148px; flex-basis: 148px; }
-        .order-fixed-status { width: 132px; flex-basis: 132px; }
-      }
       @media (max-width: 640px) {
-        .order-card { min-height: 132px; }
-        .order-card-media { width: 92px; flex-basis: 92px; min-height: 132px; }
-        .order-card-placeholder { min-height: 132px; font-size: 1.5rem; }
-        .order-card-scroll { gap: 16px; padding: 12px; }
-        .order-card-scroll > .order-main { min-width: 150px; flex-basis: 150px; }
-        .order-fixed-status { width: 116px; flex-basis: 116px; padding: 10px 8px; }
-        .order-admin-actions { width: 130px; flex-basis: 130px; padding: 9px 7px; }
-        .order-admin-actions button { font-size: .64rem; }
+        .ocb-media { height: 140px; }
         .order-admin-summary { grid-template-columns: repeat(2, 1fr); }
       }
 
@@ -855,6 +872,21 @@
         <section id="page-home" class="page">
           <h2 class="section-title">Home</h2>
           <p class="section-caption">A quick overview of your inventory and the most-used actions.</p>
+
+          <!-- Copy of the Orders page's first section: summary cards + search + print (responsible user only) -->
+          <div class="home-orders-block" id="homeOrdersBlock">
+            <div class="orders-toolbar panel" style="padding:14px 16px;margin-bottom:18px">
+              <div class="search-wrap" style="min-width:220px">
+                <span class="search-icon">🔍</span>
+                <input type="search" class="search-input" id="homeOrdersSearch" placeholder="Search order #, plate, vehicle…" />
+                <button class="clear-search" id="homeOrdersClear" type="button">×</button>
+              </div>
+              <button class="secondary-button" type="button" id="printSelectedOrderHome">🖨️ Print Order</button>
+              <button class="ghost-button" type="button" id="printOrdersReportHome">🧾 Print Report</button>
+            </div>
+            <div class="order-search-dropdown" id="homeOrdersSearchDropdown"></div>
+            <div class="order-admin-summary" id="homeOrderAdminSummary"></div>
+          </div>
 
           <div class="quick-actions">
             <button class="secondary-button quick-action" id="qaAddPart">
@@ -1172,13 +1204,13 @@
               <div class="panel-header">
                 <div>
                   <h3 class="panel-title">My Orders</h3>
-                  <div class="panel-caption">Search by plate number, vehicle, model, or part type.</div>
+                  <div class="panel-caption">Search by order number, plate number, vehicle, model, or part type.</div>
                 </div>
               </div>
               <div class="panel-body">
                 <div class="search-wrap">
                   <span class="search-icon">🔍</span>
-                  <input type="search" class="search-input" id="ordersEmployeeSearch" placeholder="Search plate number or vehicle…" />
+                  <input type="search" class="search-input" id="ordersEmployeeSearch" placeholder="Search order #, plate number, or vehicle…" />
                   <button class="clear-search" id="ordersEmployeeClear" type="button">×</button>
                 </div>
                 <div class="orders-list" id="employeeCurrentOrders" style="margin-top:14px"></div>
@@ -1192,12 +1224,13 @@
             <div class="orders-toolbar panel" style="padding:14px 16px;margin-bottom:18px">
               <div class="search-wrap" style="min-width:220px">
                 <span class="search-icon">🔍</span>
-                <input type="search" class="search-input" id="ordersAdminSearch" placeholder="Search all orders…" />
+                <input type="search" class="search-input" id="ordersAdminSearch" placeholder="Search order #, plate, vehicle…" />
                 <button class="clear-search" id="ordersAdminClear" type="button">×</button>
               </div>
               <button class="secondary-button" type="button" id="printSelectedOrder">🖨️ Print Order</button>
               <button class="ghost-button" type="button" id="printOrdersReport">🧾 Print Report</button>
             </div>
+            <div class="order-search-dropdown" id="ordersAdminSearchDropdown"></div>
             <div class="order-admin-summary" id="orderAdminSummary"></div>
             <div class="order-section-title"><h3>New Requests</h3><span id="adminNewCount">0 orders</span></div>
             <div class="orders-list" id="adminNewOrders"></div>
@@ -1523,6 +1556,14 @@
           </div>
           <div class="detail-item" style="margin-top:10px">
             <div class="k">Responsible note</div><div class="v" id="orderDetailAdminNote">—</div>
+          </div>
+          <div class="detail-item order-detail-admin" id="orderDetailAdminActions" style="display:none;margin-top:10px">
+            <div class="k">Update Status (Responsible)</div>
+            <div class="order-detail-admin-row">
+              <select id="orderDetailStatusSelect" aria-label="Change order status"></select>
+              <button type="button" class="secondary-button" id="orderDetailCompleteBtn">✓ Confirm Complete</button>
+              <button type="button" class="ghost-button" id="orderDetailNoteBtn">＋ Add / Edit Note</button>
+            </div>
           </div>
         </div>
       </div>
@@ -2026,6 +2067,34 @@
             completed_at: order.completedAt || null,
           };
         }
+        // Keeps every open browser in sync: whenever any user inserts, updates, or
+        // deletes an order, Supabase Realtime pushes the change here so the Orders
+        // page, its Home page copy, and the open order detail (if any) update
+        // instantly — no page refresh needed. Requires Realtime to be enabled on
+        // the "orders" table in Supabase (Database → Replication).
+        function subscribeOrdersRealtime() {
+          sb.channel("orders-live-sync")
+            .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (payload) => {
+              const { eventType, new: newRow, old: oldRow } = payload;
+              if (eventType === "INSERT") {
+                if (!state.orders.some((o) => o.id === newRow.id)) state.orders.unshift(rowToOrder(newRow));
+              } else if (eventType === "UPDATE") {
+                const idx = state.orders.findIndex((o) => o.id === newRow.id);
+                if (idx !== -1) state.orders[idx] = rowToOrder(newRow);
+                else state.orders.unshift(rowToOrder(newRow));
+              } else if (eventType === "DELETE") {
+                const deadId = oldRow && oldRow.id;
+                state.orders = state.orders.filter((o) => o.id !== deadId);
+              }
+              assignOrderNumbers();
+              cacheOffline(OFFLINE_ORDERS_KEY, state.orders);
+              refreshOrdersUI();
+              if (eventType === "UPDATE" && state.selectedOrderId === newRow.id && orderDetailModal.classList.contains("open")) {
+                openOrderDetail(state.selectedOrderId);
+              }
+            })
+            .subscribe();
+        }
         async function fetchOrders() {
           const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false });
           if (error) {
@@ -2300,6 +2369,15 @@
         }
         function formatDateTime(iso) {
           try { return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }); } catch (e) { return iso; }
+        }
+        // Compact day/month/year only, no time — used on order cards/rows.
+        function formatDateShort(iso) {
+          try {
+            const d = new Date(iso);
+            const dd = String(d.getDate()).padStart(2, "0");
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            return `${dd}/${mm}/${d.getFullYear()}`;
+          } catch (e) { return iso; }
         }
 
         function logTx(part, type, qty) {
@@ -2947,50 +3025,98 @@
         // ===================================================================
         function orderStatusClass(status) { return status || "requested"; }
         function orderStatusLabel(status) { return ORDER_STATUS_LABELS[status] || "Requested"; }
+        // Automatic, sequential order numbers assigned by submission order (oldest = #1).
+        // Recomputed cheaply before every orders render so it always stays in sync.
+        function assignOrderNumbers() {
+          [...state.orders]
+            .sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
+            .forEach((order, index) => { order.orderNumber = index + 1; });
+        }
+        function orderNumberLabel(order) {
+          return order.orderNumber != null ? `#${order.orderNumber}` : `#${String(order.id).slice(0, 8).toUpperCase()}`;
+        }
         function orderMatches(order, query) {
-          const q = (query || "").trim().toLowerCase();
+          const q = (query || "").trim().toLowerCase().replace(/^#/, "");
           if (!q) return true;
           return [order.vehicleMake, order.vehicleModel, order.vehicleYear, order.plateNumber,
             order.partType, order.partLocation, order.notes, order.employeeName, order.status,
-            orderStatusLabel(order.status)].some((value) => String(value || "").toLowerCase().includes(q));
+            orderStatusLabel(order.status), order.orderNumber != null ? String(order.orderNumber) : ""]
+            .some((value) => String(value || "").toLowerCase().includes(q));
         }
         function orderEmptyHtml(message = "No orders to display.") {
           return `<div class="order-empty"><div class="emoji">🧾</div>${escapeHtml(message)}</div>`;
         }
-        function renderOrderCard(order, admin = false) {
+        // Big, clear card for a brand-new / not-yet-reviewed request (status = requested).
+        // Photo on top, details below, and a footer of date · note · status — mirrors the
+        // large "Parts" page cards so new orders are impossible to miss.
+        function renderOrderCardBig(order) {
           const photo = Array.isArray(order.photos) && order.photos[0] ? order.photos[0] : "";
           const vehicle = `${order.vehicleMake || "Vehicle"} ${order.vehicleModel || ""}`.trim();
-          const controls = admin ? `
-            <div class="order-admin-actions" data-order-controls>
-              <select data-order-status="${escapeHtml(order.id)}" aria-label="Change order status">
-                ${ORDER_STATUSES.map(([value, label]) => `<option value="${value}" ${value === order.status ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
-              </select>
-              <button type="button" class="secondary-button" data-order-complete="${escapeHtml(order.id)}">✓ Confirm Complete</button>
-              <button type="button" class="ghost-button" data-order-note="${escapeHtml(order.id)}">＋ Add Note</button>
-            </div>` : "";
           return `
-            <article class="order-card" data-order-id="${escapeHtml(order.id)}">
-              <div class="order-card-media" data-order-photo="${photo ? escapeHtml(photo) : ""}">
-                ${photo ? `<img src="${escapeHtml(photo)}" alt="${escapeHtml(vehicle)}" loading="lazy" />` : `<div class="order-card-placeholder">🚗</div>`}
+            <article class="order-card-big" data-order-id="${escapeHtml(order.id)}">
+              <div class="ocb-media" data-order-photo="${photo ? escapeHtml(photo) : ""}">
+                ${photo ? `<img src="${escapeHtml(photo)}" alt="${escapeHtml(vehicle)}" loading="lazy" />` : `<div class="ocb-placeholder">🚗</div>`}
               </div>
-              <div class="order-card-scroll" data-order-scroll>
-                <div class="order-main">
-                  <h4>${escapeHtml(vehicle)}</h4>
-                  <div class="order-part">${escapeHtml(order.partType || "Part not specified")}</div>
-                  <div class="order-id">#${escapeHtml(String(order.id).slice(0, 8).toUpperCase())}</div>
+              <div class="ocb-body">
+                <div class="ocb-head">
+                  <h4 class="ocb-title">${escapeHtml(vehicle)}</h4>
+                  <span class="ocb-num">${escapeHtml(orderNumberLabel(order))}</span>
                 </div>
-                <div class="order-field"><span class="k">Plate number</span><span class="v">${escapeHtml(order.plateNumber || "—")}</span></div>
-                <div class="order-field"><span class="k">Year</span><span class="v">${escapeHtml(order.vehicleYear || "—")}</span></div>
-                <div class="order-field"><span class="k">Part location</span><span class="v">${escapeHtml(order.partLocation || "—")}</span></div>
-                <div class="order-field"><span class="k">Submitted</span><span class="v">${escapeHtml(order.createdAt ? formatDateTime(order.createdAt) : "—")}</span></div>
-                ${order.notes ? `<div class="order-field"><span class="k">Note</span><span class="v order-note-preview" title="${escapeHtml(order.notes)}">${escapeHtml(order.notes)}</span></div>` : ""}
+                <div class="ocb-sub">${escapeHtml(order.partType || "Part not specified")} · Requested by <strong>${escapeHtml(order.employeeName || "Unknown employee")}</strong></div>
+                <div class="ocb-info-grid">
+                  <div class="ocb-info-item"><span class="l">Plate number</span><span class="v">${escapeHtml(order.plateNumber || "—")}</span></div>
+                  <div class="ocb-info-item"><span class="l">Year</span><span class="v">${escapeHtml(order.vehicleYear || "—")}</span></div>
+                  <div class="ocb-info-item"><span class="l">Part location</span><span class="v">${escapeHtml(order.partLocation || "—")}</span></div>
+                </div>
+                <div class="ocb-footer">
+                  <span class="ocb-date">${escapeHtml(order.createdAt ? formatDateShort(order.createdAt) : "—")}</span>
+                  <span class="ocb-note" title="${order.notes ? escapeHtml(order.notes) : ""}">${order.notes ? escapeHtml(order.notes) : "—"}</span>
+                  <span class="order-status-pill ${orderStatusClass(order.status)}">${escapeHtml(orderStatusLabel(order.status))}</span>
+                </div>
               </div>
-              <div class="order-fixed-status" data-order-open>
-                <span class="order-status-pill ${orderStatusClass(order.status)}">${escapeHtml(orderStatusLabel(order.status))}</span>
-                <div class="order-requester">Requested by<strong>${escapeHtml(order.employeeName || "Unknown employee")}</strong></div>
-              </div>
-              ${controls}
             </article>`;
+        }
+        // Compact swipeable row for orders past "requested" — same photo + draggable
+        // info-strip pattern as the Home page list, with a small fixed right panel
+        // showing the requesting employee and current status instead of a qty badge.
+        function renderOrderRow(order) {
+          const photo = Array.isArray(order.photos) && order.photos[0] ? order.photos[0] : "";
+          const vehicle = `${order.vehicleMake || "Vehicle"} ${order.vehicleModel || ""}`.trim();
+          return `
+          <div class="item-row order-list-row" data-order-id="${escapeHtml(order.id)}">
+            <div class="item-photo" data-order-photo="${photo ? escapeHtml(photo) : ""}">${photo ? `<img src="${escapeHtml(photo)}" alt="" loading="lazy" />` : `<span class="ph-icon">🚗</span>`}</div>
+            <div class="item-scroll" data-order-scroll>
+              <div class="item-main">
+                <div class="item-name">${escapeHtml(vehicle)} <span class="order-row-num">${escapeHtml(orderNumberLabel(order))}</span></div>
+                <div class="item-type">${escapeHtml(order.partType || "—")}</div>
+              </div>
+              <div class="item-field"><span class="item-field-label">Plate</span><span class="item-field-value">${escapeHtml(order.plateNumber || "—")}</span></div>
+              <div class="item-field"><span class="item-field-label">Year</span><span class="item-field-value">${escapeHtml(order.vehicleYear || "—")}</span></div>
+              <div class="item-field"><span class="item-field-label">Location</span><span class="item-field-value">${escapeHtml(order.partLocation || "—")}</span></div>
+              <div class="item-field"><span class="item-field-label">Date</span><span class="item-field-value">${escapeHtml(order.createdAt ? formatDateShort(order.createdAt) : "—")}</span></div>
+              ${order.notes ? `<div class="item-field"><span class="item-field-label">Note</span><span class="item-field-value">${escapeHtml(order.notes)}</span></div>` : ""}
+            </div>
+            <div class="item-badge-wrap order-row-badge">
+              <div class="order-row-employee">${escapeHtml(order.employeeName || "—")}</div>
+              <div class="order-status-pill mini ${orderStatusClass(order.status)}">${escapeHtml(orderStatusLabel(order.status))}</div>
+            </div>
+          </div>`;
+        }
+        // Renders a list of orders, grouping consecutive non-"requested" orders into a
+        // single boxed row-list (like the Home page panel) while keeping each new
+        // "requested" order as its own prominent big card.
+        function renderOrderEntries(orders) {
+          let html = "";
+          let buffer = [];
+          const flush = () => {
+            if (buffer.length) { html += `<div class="order-row-group">${buffer.join("")}</div>`; buffer = []; }
+          };
+          orders.forEach((order) => {
+            if (order.status === "requested") { flush(); html += renderOrderCardBig(order); }
+            else buffer.push(renderOrderRow(order));
+          });
+          flush();
+          return html;
         }
         function wireOrderList(container) {
           if (container.dataset.ordersWired) return;
@@ -3018,16 +3144,7 @@
           container.addEventListener("pointerup", endDrag);
           container.addEventListener("pointerleave", endDrag);
           container.addEventListener("pointercancel", endDrag);
-          container.addEventListener("change", async (event) => {
-            const statusSelect = event.target.closest("[data-order-status]");
-            if (statusSelect) await changeOrderStatus(statusSelect.dataset.orderStatus, statusSelect.value);
-          });
-          container.addEventListener("click", async (event) => {
-            const complete = event.target.closest("[data-order-complete]");
-            if (complete) { await changeOrderStatus(complete.dataset.orderComplete, "completed"); return; }
-            const note = event.target.closest("[data-order-note]");
-            if (note) { await addOrderNote(note.dataset.orderNote); return; }
-            if (event.target.closest("[data-order-controls]")) return;
+          container.addEventListener("click", (event) => {
             const photo = event.target.closest("[data-order-photo]");
             if (photo && photo.dataset.orderPhoto) { openPhotoViewer(photo.dataset.orderPhoto); return; }
             const scroll = event.target.closest("[data-order-scroll]");
@@ -3049,8 +3166,43 @@
           const current = orders.filter((order) => order.status !== "completed");
           $("#employeeCurrentCount").textContent = current.length;
           $("#employeeReadyCount").textContent = ready.length;
-          $("#employeeCurrentOrders").innerHTML = current.length ? current.map((o) => renderOrderCard(o)).join("") : orderEmptyHtml(query ? "No current orders match your search." : "You have no current orders.");
-          $("#employeeReadyOrders").innerHTML = ready.length ? ready.map((o) => renderOrderCard(o)).join("") : orderEmptyHtml("No parts have been marked ready yet.");
+          $("#employeeCurrentOrders").innerHTML = current.length ? renderOrderEntries(current) : orderEmptyHtml(query ? "No current orders match your search." : "You have no current orders.");
+          $("#employeeReadyOrders").innerHTML = ready.length ? renderOrderEntries(ready) : orderEmptyHtml("No parts have been marked ready yet.");
+        }
+        // Shared summary-box counter, reused for the Orders page toolbar and its
+        // duplicate on the Home page. Counts respect whatever query is passed in.
+        function computeOrderSummary(query) {
+          const orders = state.orders.filter((order) => orderMatches(order, query));
+          const newest = orders.filter((order) => order.status === "requested");
+          const completed = orders.filter((order) => order.status === "completed");
+          return [
+            ["All Orders", orders.length], ["New Requests", newest.length],
+            ["In Progress", orders.filter((o) => !["requested", "completed", "cancelled", "rejected"].includes(o.status)).length],
+            ["Ready", completed.length],
+          ];
+        }
+        function renderOrderSummaryInto(containerId, query) {
+          const el = $(`#${containerId}`);
+          if (!el) return;
+          el.innerHTML = computeOrderSummary(query)
+            .map(([label, value]) => `<div class="order-summary-box"><div class="v">${formatNumber(value)}</div><div class="l">${label}</div></div>`).join("");
+        }
+        // Flat, curtain-style dropdown of every order matching the query — regardless
+        // of its status — so a search always surfaces a match right under the search box.
+        function renderOrderSearchDropdown(dropdownId, query) {
+          const box = $(`#${dropdownId}`);
+          if (!box) return;
+          const q = (query || "").trim();
+          if (!q) { box.classList.remove("open"); box.innerHTML = ""; return; }
+          const matches = state.orders.filter((order) => orderMatches(order, q))
+            .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+          box.innerHTML = matches.length
+            ? `<div class="order-search-count">${matches.length} order${matches.length === 1 ? "" : "s"} found</div>
+               <div class="orders-list"><div class="order-row-group">${matches.map(renderOrderRow).join("")}</div></div>`
+            : orderEmptyHtml("No orders match your search.");
+          box.classList.add("open");
+          const list = box.querySelector(".orders-list");
+          if (list) wireOrderList(list);
         }
         function renderAdminOrders() {
           const query = $("#ordersAdminSearch").value;
@@ -3060,23 +3212,39 @@
           const activeStatuses = ORDER_STATUSES.filter(([value]) => !["requested", "completed"].includes(value));
           $("#adminNewCount").textContent = `${newest.length} order${newest.length === 1 ? "" : "s"}`;
           $("#adminCompletedCount").textContent = `${completed.length} order${completed.length === 1 ? "" : "s"}`;
-          $("#adminNewOrders").innerHTML = newest.length ? newest.map((o) => renderOrderCard(o, true)).join("") : orderEmptyHtml("No new requests.");
-          $("#adminCompletedOrders").innerHTML = completed.length ? completed.map((o) => renderOrderCard(o, true)).join("") : orderEmptyHtml("No completed orders.");
+          $("#adminNewOrders").innerHTML = newest.length ? renderOrderEntries(newest) : orderEmptyHtml("No new requests.");
+          $("#adminCompletedOrders").innerHTML = completed.length ? renderOrderEntries(completed) : orderEmptyHtml("No completed orders.");
           $("#adminStatusSections").innerHTML = activeStatuses.map(([value, label]) => {
             const bucket = orders.filter((order) => order.status === value);
             return `<div class="order-section-title"><h3>${escapeHtml(label)}</h3><span>${bucket.length} order${bucket.length === 1 ? "" : "s"}</span></div>
-              <div class="orders-list" data-status-list="${escapeHtml(value)}">${bucket.length ? bucket.map((o) => renderOrderCard(o, true)).join("") : orderEmptyHtml(`No orders in ${label.toLowerCase()}.`)}</div>`;
+              <div class="orders-list" data-status-list="${escapeHtml(value)}">${bucket.length ? renderOrderEntries(bucket) : orderEmptyHtml(`No orders in ${label.toLowerCase()}.`)}</div>`;
           }).join("");
           $$("#adminStatusSections .orders-list").forEach(wireOrderList);
-          $("#orderAdminSummary").innerHTML = [
-            ["All Orders", orders.length], ["New Requests", newest.length],
-            ["In Progress", orders.filter((o) => !["requested", "completed", "cancelled", "rejected"].includes(o.status)).length],
-            ["Ready", completed.length],
-          ].map(([label, value]) => `<div class="order-summary-box"><div class="v">${formatNumber(value)}</div><div class="l">${label}</div></div>`).join("");
+          renderOrderSummaryInto("orderAdminSummary", query);
+          renderOrderSearchDropdown("ordersAdminSearchDropdown", query);
         }
         function renderOrdersPage() {
+          assignOrderNumbers();
           if (isAdminProfile()) renderAdminOrders();
           else renderEmployeeOrders();
+        }
+        // Renders the Home page's copy of the summary+search block (responsible user only).
+        function renderHomeOrdersBlock() {
+          const block = $("#homeOrdersBlock");
+          if (!block) return;
+          const isAdmin = isAdminProfile();
+          block.classList.toggle("visible", isAdmin);
+          if (!isAdmin) return;
+          const query = $("#homeOrdersSearch").value;
+          renderOrderSummaryInto("homeOrderAdminSummary", query);
+          renderOrderSearchDropdown("homeOrdersSearchDropdown", query);
+        }
+        // Refreshes every place order data is shown — call this (instead of
+        // renderOrdersPage alone) whenever state.orders changes, so the Orders page,
+        // its Home page copy, and both search dropdowns all stay live and in sync.
+        function refreshOrdersUI() {
+          renderOrdersPage();
+          renderHomeOrdersBlock();
         }
         function resetOrderForm() {
           $("#orderForm").reset();
@@ -3113,7 +3281,7 @@
           state.selectedOrderId = id;
           const vehicle = `${order.vehicleMake || "Vehicle"} ${order.vehicleModel || ""}`.trim();
           $("#orderDetailTitle").textContent = vehicle;
-          $("#orderDetailId").textContent = `Order #${String(order.id).slice(0, 8).toUpperCase()} · ${orderStatusLabel(order.status)}`;
+          $("#orderDetailId").textContent = `Order ${orderNumberLabel(order)} · ${orderStatusLabel(order.status)}`;
           $("#orderDetailGrid").innerHTML = [
             ["Plate Number", order.plateNumber], ["Year", order.vehicleYear], ["Part Type", order.partType],
             ["Part Location", order.partLocation], ["Requested By", order.employeeName], ["Submitted", order.createdAt ? formatDateTime(order.createdAt) : "—"],
@@ -3125,11 +3293,29 @@
             ? order.photos.map((src) => `<img class="order-detail-photo" src="${escapeHtml(src)}" alt="" />`).join("")
             : `<div class="hint">No photos attached.</div>`;
           $("#orderDetailPhotos").onclick = (event) => { const img = event.target.closest("img"); if (img) openPhotoViewer(img.src); };
+          const adminBox = $("#orderDetailAdminActions");
+          if (isAdminProfile()) {
+            adminBox.style.display = "";
+            $("#orderDetailStatusSelect").innerHTML = ORDER_STATUSES
+              .map(([value, label]) => `<option value="${value}" ${value === order.status ? "selected" : ""}>${escapeHtml(label)}</option>`)
+              .join("");
+          } else {
+            adminBox.style.display = "none";
+          }
           $("#orderDetailModal").classList.add("open");
         }
         const orderDetailModal = $("#orderDetailModal");
         $("#orderDetailClose").addEventListener("click", () => { orderDetailModal.classList.remove("open"); state.selectedOrderId = null; });
         orderDetailModal.addEventListener("click", (event) => { if (event.target === orderDetailModal) orderDetailModal.classList.remove("open"); });
+        $("#orderDetailStatusSelect").addEventListener("change", (event) => {
+          if (state.selectedOrderId) changeOrderStatus(state.selectedOrderId, event.target.value);
+        });
+        $("#orderDetailCompleteBtn").addEventListener("click", () => {
+          if (state.selectedOrderId) changeOrderStatus(state.selectedOrderId, "completed");
+        });
+        $("#orderDetailNoteBtn").addEventListener("click", () => {
+          if (state.selectedOrderId) addOrderNote(state.selectedOrderId);
+        });
         async function changeOrderStatus(id, status) {
           const order = state.orders.find((item) => item.id === id);
           if (!order || !ORDER_STATUS_LABELS[status]) return;
@@ -3138,7 +3324,8 @@
           if (!(await updateOrderRemote(id, patch))) return;
           Object.assign(order, patch);
           cacheOffline(OFFLINE_ORDERS_KEY, state.orders);
-          renderOrdersPage();
+          refreshOrdersUI();
+          if (state.selectedOrderId === id && orderDetailModal.classList.contains("open")) openOrderDetail(id);
           showToast(`Order marked ${ORDER_STATUS_LABELS[status].toLowerCase()}.`);
         }
         async function addOrderNote(id) {
@@ -3150,7 +3337,8 @@
           if (!(await updateOrderRemote(id, patch))) return;
           Object.assign(order, patch);
           cacheOffline(OFFLINE_ORDERS_KEY, state.orders);
-          renderOrdersPage();
+          refreshOrdersUI();
+          if (state.selectedOrderId === id && orderDetailModal.classList.contains("open")) openOrderDetail(id);
           showToast("Responsible note saved.");
         }
         let isSavingOrder = false;
@@ -3180,7 +3368,7 @@
               state.orders.unshift(order);
               cacheOffline(OFFLINE_ORDERS_KEY, state.orders);
               resetOrderForm();
-              renderOrdersPage();
+              refreshOrdersUI();
               showToast("Order submitted to the responsible team.");
             }
           } finally {
@@ -3204,6 +3392,11 @@
         $("#ordersAdminClear").addEventListener("click", () => { $("#ordersAdminSearch").value = ""; renderAdminOrders(); });
         $("#printSelectedOrder").addEventListener("click", () => printOrder(state.selectedOrderId));
         $("#printOrdersReport").addEventListener("click", printOrdersReport);
+        // Home page copy of the same search + print controls
+        $("#homeOrdersSearch").addEventListener("input", renderHomeOrdersBlock);
+        $("#homeOrdersClear").addEventListener("click", () => { $("#homeOrdersSearch").value = ""; renderHomeOrdersBlock(); });
+        $("#printSelectedOrderHome").addEventListener("click", () => printOrder(state.selectedOrderId));
+        $("#printOrdersReportHome").addEventListener("click", printOrdersReport);
 
         function printOrder(id) {
           const order = state.orders.find((item) => item.id === id);
@@ -3216,7 +3409,7 @@
             .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.item{border:1px solid #ddd;border-radius:8px;padding:10px}.k{font-size:10px;color:#666;text-transform:uppercase}.v{font-weight:700;margin-top:4px}
             .notes{border:1px solid #ddd;border-radius:8px;padding:12px;margin-top:14px;white-space:pre-wrap} @media print{body{margin:12mm}}
           </style></head><body><h1>Quality Part X — Parts Order</h1>
-            <div class="meta">Order #${escapeHtml(String(order.id).slice(0, 8).toUpperCase())} · ${escapeHtml(orderStatusLabel(order.status))} · ${escapeHtml(formatDateTime(order.createdAt))}</div>
+            <div class="meta">Order ${escapeHtml(orderNumberLabel(order))} · ${escapeHtml(orderStatusLabel(order.status))} · ${escapeHtml(formatDateTime(order.createdAt))}</div>
             <h2>${escapeHtml(vehicle)}</h2><div class="grid">
             ${[["Plate Number", order.plateNumber],["Year",order.vehicleYear],["Part Type",order.partType],["Part Location",order.partLocation],["Requested By",order.employeeName],["Updated",order.updatedAt ? formatDateTime(order.updatedAt) : "—"]].map(([k,v])=>`<div class="item"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v || "—")}</div></div>`).join("")}</div>
             <div class="notes"><b>Employee notes</b><br>${escapeHtml(order.notes || "No notes.")}</div>
@@ -3302,6 +3495,7 @@
           $("#recentEmpty").classList.toggle("show", recent.length === 0);
 
           renderAvailableParts();
+          renderHomeOrdersBlock();
         }
 
         let availablePartsExpanded = false;
@@ -4287,6 +4481,8 @@
           state.options.customFieldOptions = customConfig.options || {};
           state.transactions = transactions;
           state.orders = orders;
+          assignOrderNumbers();
+          subscribeOrdersRealtime();
           if (seedMissingModels()) await saveOptions();
           populateOptionFieldSelect();
           renderCustomFieldDefsList();
