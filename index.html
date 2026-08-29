@@ -2093,7 +2093,39 @@
                 openOrderDetail(state.selectedOrderId);
               }
             })
-            .subscribe();
+            .subscribe((status) => {
+              if (status === "SUBSCRIBED") { console.log("[orders realtime] connected"); return; }
+              if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+                console.warn("[orders realtime] " + status + " — falling back to periodic refresh only.");
+              }
+            });
+        }
+        // Safety net: even if Realtime isn't fully enabled on the Supabase project
+        // (publication/replication not configured), this quietly re-checks the
+        // orders table in the background and refreshes the UI the moment something
+        // changes — so orders never need more than a few seconds to show up,
+        // with or without Realtime working.
+        async function fetchOrdersQuiet() {
+          const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false });
+          if (error) { console.error("[orders poll]", error); return null; }
+          return (data || []).map(rowToOrder);
+        }
+        function ordersSnapshotKey(orders) {
+          return orders.map((o) => `${o.id}:${o.status}:${o.updatedAt}`).sort().join("|");
+        }
+        let ordersPollTimer = null;
+        function startOrdersPolling() {
+          if (ordersPollTimer) return;
+          ordersPollTimer = setInterval(async () => {
+            const fresh = await fetchOrdersQuiet();
+            if (!fresh) return;
+            if (ordersSnapshotKey(fresh) === ordersSnapshotKey(state.orders)) return;
+            state.orders = fresh;
+            assignOrderNumbers();
+            cacheOffline(OFFLINE_ORDERS_KEY, state.orders);
+            refreshOrdersUI();
+            if (state.selectedOrderId && orderDetailModal.classList.contains("open")) openOrderDetail(state.selectedOrderId);
+          }, 15000);
         }
         async function fetchOrders() {
           const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false });
@@ -4483,6 +4515,7 @@
           state.orders = orders;
           assignOrderNumbers();
           subscribeOrdersRealtime();
+          startOrdersPolling();
           if (seedMissingModels()) await saveOptions();
           populateOptionFieldSelect();
           renderCustomFieldDefsList();
