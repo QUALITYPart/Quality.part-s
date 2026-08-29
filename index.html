@@ -695,6 +695,78 @@
       .option-add-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
       .option-add-row input { flex: 1; min-width: 180px; }
 
+      /* ===== Parts orders ===== */
+      .orders-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .orders-toolbar > * { flex: 1 1 150px; }
+      .orders-toolbar .primary-button, .orders-toolbar .secondary-button, .orders-toolbar .ghost-button { flex: 0 1 auto; }
+      .orders-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 18px; }
+      .orders-tab { min-height: 42px; padding: 0 15px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--muted-strong); font-size: .78rem; font-weight: 800; }
+      .orders-tab.active { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+      .orders-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; margin-left: 5px; border-radius: 999px; background: rgba(0,0,0,.14); font-size: .68rem; }
+      .orders-status-line { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: var(--muted); font-size: .74rem; margin-top: 8px; }
+      .orders-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+      .orders-admin-view { display: none; }
+      .orders-admin-view.visible { display: block !important; }
+      .orders-employee-view.hidden { display: none !important; }
+      .orders-list { display: flex; flex-direction: column; gap: 12px; }
+      .order-card {
+        position: relative; display: flex; align-items: stretch; min-height: 148px; overflow: hidden;
+        border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel-solid);
+        box-shadow: var(--shadow); transition: border-color 160ms ease, transform 160ms ease;
+      }
+      .order-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+      .order-card-media { width: 180px; min-height: 148px; flex: 0 0 180px; background: var(--bg-soft); cursor: zoom-in; }
+      .order-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .order-card-placeholder { width: 100%; height: 100%; min-height: 148px; display: grid; place-items: center; font-size: 2rem; opacity: .48; }
+      .order-card-scroll { display: flex; align-items: center; gap: 22px; flex: 1; min-width: 0; overflow-x: auto; padding: 16px 18px; cursor: grab; scrollbar-width: thin; }
+      .order-card-scroll.dragging { cursor: grabbing; }
+      .order-card-scroll > .order-main { min-width: 185px; flex: 0 0 185px; }
+      .order-main h4 { margin: 0; font-size: 1rem; font-weight: 850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .order-part { margin-top: 3px; color: var(--accent); font-weight: 800; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .order-id { margin-top: 8px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .66rem; }
+      .order-field { min-width: 105px; flex: 0 0 auto; display: flex; flex-direction: column; gap: 2px; }
+      .order-field .k { color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-size: .62rem; font-weight: 800; white-space: nowrap; }
+      .order-field .v { color: var(--text); font-size: .8rem; font-weight: 700; white-space: nowrap; max-width: 185px; overflow: hidden; text-overflow: ellipsis; }
+      .order-fixed-status { width: 154px; flex: 0 0 154px; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 14px 12px; border-left: 1px solid var(--border); background: var(--panel-solid); }
+      .order-status-pill { display: inline-flex; align-items: center; justify-content: center; width: fit-content; max-width: 100%; padding: 5px 9px; border-radius: 999px; font-size: .68rem; font-weight: 850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .order-status-pill.requested { color: var(--warning); background: rgba(247,201,105,.15); }
+      .order-status-pill.received, .order-status-pill.processing { color: var(--blue); background: rgba(125,183,255,.15); }
+      .order-status-pill.delivery, .order-status-pill.arrived, .order-status-pill.completed { color: var(--accent-strong); background: rgba(66,201,143,.15); }
+      .order-status-pill.delayed, .order-status-pill.postponed { color: var(--warning); background: rgba(247,201,105,.15); }
+      .order-status-pill.not-arrived, .order-status-pill.cancelled, .order-status-pill.rejected { color: var(--danger); background: rgba(255,127,145,.15); }
+      .order-requester { color: var(--muted); font-size: .68rem; line-height: 1.35; white-space: normal; }
+      .order-requester strong { color: var(--text); display: block; font-size: .74rem; }
+      .order-admin-actions { width: 178px; flex: 0 0 178px; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 12px; border-left: 1px solid var(--border); background: var(--bg-soft); }
+      .order-admin-actions select { min-height: 36px; padding: 7px 8px; font-size: .72rem; }
+      .order-admin-actions button { min-height: 34px; padding: 0 9px; font-size: .7rem; }
+      .order-section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 22px 0 10px; }
+      .order-section-title h3 { margin: 0; font-size: .98rem; }
+      .order-section-title span { color: var(--muted); font-size: .72rem; }
+      .order-note-preview { color: var(--muted); font-size: .72rem; max-width: 230px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .order-detail-photo { width: 96px; height: 76px; border-radius: 10px; object-fit: cover; cursor: zoom-in; border: 1px solid var(--border); }
+      .order-empty { border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 28px; color: var(--muted); text-align: center; }
+      .order-empty .emoji { font-size: 1.7rem; margin-bottom: 6px; }
+      .order-admin-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+      .order-summary-box { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-soft); padding: 12px; }
+      .order-summary-box .v { font-size: 1.35rem; font-weight: 850; }
+      .order-summary-box .l { color: var(--muted); font-size: .68rem; margin-top: 2px; }
+      @media (max-width: 820px) {
+        .order-card-media { width: 120px; flex-basis: 120px; }
+        .order-admin-actions { width: 148px; flex-basis: 148px; }
+        .order-fixed-status { width: 132px; flex-basis: 132px; }
+      }
+      @media (max-width: 640px) {
+        .order-card { min-height: 132px; }
+        .order-card-media { width: 92px; flex-basis: 92px; min-height: 132px; }
+        .order-card-placeholder { min-height: 132px; font-size: 1.5rem; }
+        .order-card-scroll { gap: 16px; padding: 12px; }
+        .order-card-scroll > .order-main { min-width: 150px; flex-basis: 150px; }
+        .order-fixed-status { width: 116px; flex-basis: 116px; padding: 10px 8px; }
+        .order-admin-actions { width: 130px; flex-basis: 130px; padding: 9px 7px; }
+        .order-admin-actions button { font-size: .64rem; }
+        .order-admin-summary { grid-template-columns: repeat(2, 1fr); }
+      }
+
       @media print {
         .bottom-nav, .topbar, .drawer-overlay, .modal-overlay, .toast, .no-print, .quick-actions { display: none !important; }
         body { padding-bottom: 0; background: #fff; color: #000; }
@@ -1024,6 +1096,117 @@
           </div>
         </section>
 
+        <!-- ================= PAGE: ORDERS ================= -->
+        <section id="page-orders" class="page">
+          <div class="employee-page-top">
+            <div>
+              <h2 class="section-title">Parts Orders</h2>
+              <p class="section-caption">Request a part for a vehicle, follow its progress, and keep the workshop informed.</p>
+            </div>
+            <div class="orders-status-line"><span class="orders-status-dot"></span><span id="ordersSyncStatus">Shared database</span></div>
+          </div>
+
+          <!-- Employee view -->
+          <div class="orders-employee-view" id="ordersEmployeeView">
+            <div class="orders-tabs">
+              <button type="button" class="orders-tab active" data-order-employee-tab="new">Create New Order</button>
+              <button type="button" class="orders-tab" data-order-employee-tab="current">Current Orders <span class="orders-count" id="employeeCurrentCount">0</span></button>
+              <button type="button" class="orders-tab" data-order-employee-tab="ready">Ready Orders <span class="orders-count" id="employeeReadyCount">0</span></button>
+            </div>
+
+            <div class="panel" id="newOrderPanel">
+              <div class="panel-header">
+                <div>
+                  <h3 class="panel-title">Create New Parts Order</h3>
+                  <div class="panel-caption">Describe the vehicle and the part needed. Photos help the responsible team identify it faster.</div>
+                </div>
+              </div>
+              <div class="panel-body">
+                <form id="orderForm">
+                  <div class="field-grid">
+                    <div class="field">
+                      <label for="orderVehicleMake">Vehicle Make *</label>
+                      <input type="text" id="orderVehicleMake" placeholder="e.g. Toyota" required />
+                    </div>
+                    <div class="field">
+                      <label for="orderVehicleModel">Model *</label>
+                      <input type="text" id="orderVehicleModel" placeholder="e.g. Camry" required />
+                    </div>
+                    <div class="field">
+                      <label for="orderVehicleYear">Year of Manufacture *</label>
+                      <input type="text" id="orderVehicleYear" inputmode="numeric" placeholder="e.g. 2020" required />
+                    </div>
+                    <div class="field">
+                      <label for="orderPlateNumber">Plate Number *</label>
+                      <input type="text" id="orderPlateNumber" placeholder="e.g. AB-1234" required />
+                    </div>
+                    <div class="field">
+                      <label for="orderPartType">Part Type *</label>
+                      <input type="text" id="orderPartType" placeholder="e.g. Front brake pad" required />
+                    </div>
+                    <div class="field">
+                      <label for="orderPartLocation">Part Location</label>
+                      <input type="text" id="orderPartLocation" placeholder="e.g. Front left wheel" />
+                    </div>
+                    <div class="field span-2">
+                      <label for="orderNotes">Notes</label>
+                      <textarea id="orderNotes" placeholder="Extra details, symptoms, or specifications…"></textarea>
+                    </div>
+                    <div class="field span-2">
+                      <label>Vehicle and Part Photos</label>
+                      <div class="photo-strip" id="orderPhotoStrip">
+                        <label class="photo-add" title="Add photos">📷<input type="file" id="orderPhotoInput" accept="image/*" multiple capture="environment" style="display:none" /></label>
+                      </div>
+                      <div class="hint">Add one or more photos. Images are resized before upload.</div>
+                    </div>
+                  </div>
+                  <div class="form-actions">
+                    <button class="primary-button" type="submit" id="submitOrderBtn">Submit Order</button>
+                    <button class="secondary-button" type="button" id="resetOrderBtn">Clear Form</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="panel" id="employeeOrdersPanel" style="display:none">
+              <div class="panel-header">
+                <div>
+                  <h3 class="panel-title">My Orders</h3>
+                  <div class="panel-caption">Search by plate number, vehicle, model, or part type.</div>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="search-wrap">
+                  <span class="search-icon">🔍</span>
+                  <input type="search" class="search-input" id="ordersEmployeeSearch" placeholder="Search plate number or vehicle…" />
+                  <button class="clear-search" id="ordersEmployeeClear" type="button">×</button>
+                </div>
+                <div class="orders-list" id="employeeCurrentOrders" style="margin-top:14px"></div>
+                <div class="orders-list" id="employeeReadyOrders" style="margin-top:14px;display:none"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Responsible user view -->
+          <div class="orders-admin-view" id="ordersAdminView">
+            <div class="orders-toolbar panel" style="padding:14px 16px;margin-bottom:18px">
+              <div class="search-wrap" style="min-width:220px">
+                <span class="search-icon">🔍</span>
+                <input type="search" class="search-input" id="ordersAdminSearch" placeholder="Search all orders…" />
+                <button class="clear-search" id="ordersAdminClear" type="button">×</button>
+              </div>
+              <button class="secondary-button" type="button" id="printSelectedOrder">🖨️ Print Order</button>
+              <button class="ghost-button" type="button" id="printOrdersReport">🧾 Print Report</button>
+            </div>
+            <div class="order-admin-summary" id="orderAdminSummary"></div>
+            <div class="order-section-title"><h3>New Requests</h3><span id="adminNewCount">0 orders</span></div>
+            <div class="orders-list" id="adminNewOrders"></div>
+            <div class="order-section-title"><h3>Completed / Ready</h3><span id="adminCompletedCount">0 orders</span></div>
+            <div class="orders-list" id="adminCompletedOrders"></div>
+            <div id="adminStatusSections"></div>
+          </div>
+        </section>
+
         <!-- ================= PAGE: ADMIN ================= -->
         <section id="page-admin" class="page">
           <h2 class="section-title">Admin &amp; Reports</h2>
@@ -1207,7 +1390,7 @@
       <button class="nav-btn" data-page="warehouse"><span class="nav-icon">📦</span>Warehouse</button>
       <button class="nav-fab" id="navSearchBtn" aria-label="Quick search"><span class="nav-icon">🔍</span><span class="nav-label">Quick Search</span></button>
       <button class="nav-btn" data-page="parts"><span class="nav-icon">🔧</span>Parts</button>
-      <button class="nav-btn" data-page="admin"><span class="nav-icon">📊</span>Admin</button>
+      <button class="nav-btn" data-page="orders"><span class="nav-icon">🧾</span>Orders</button>
       <button class="nav-btn desktop-nav-employee" id="navEmployees" data-page="employees" type="button"><span class="nav-icon">👥</span>Employees</button>
       <button class="nav-btn nav-logout desktop-only-nav" id="navLogout" type="button"><span class="nav-icon">↪️</span>Sign out</button>
     </nav>
@@ -1217,6 +1400,7 @@
       <div class="drawer">
         <h3>More Options</h3>
         <div class="current-user-chip">Signed in as <strong id="currentUserLabel">—</strong></div>
+        <button class="drawer-item admin-only" id="drawerAdmin"><span class="di-icon">📊</span> Admin &amp; Reports</button>
         <button class="drawer-item admin-only" id="drawerEmployees"><span class="di-icon">👥</span> Employee Management</button>
         <button class="drawer-item" id="drawerExport"><span class="di-icon">⬇️</span> Export Inventory (CSV)</button>
         <button class="drawer-item" id="drawerTheme"><span class="di-icon">🌓</span> Toggle Theme (Light/Dark)</button>
@@ -1320,6 +1504,27 @@
       <div class="modal-box">
         <div class="modal-head"><h3>Photo</h3><button class="modal-close" id="photoViewClose">×</button></div>
         <div class="modal-body"><img id="photoViewImg" style="width:100%;border-radius:12px" /></div>
+      </div>
+    </div>
+
+    <!-- ===== Order detail modal ===== -->
+    <div class="modal-overlay" id="orderDetailModal">
+      <div class="modal-box wide">
+        <div class="modal-head">
+          <div><h3 id="orderDetailTitle">Order Details</h3><div class="panel-caption" id="orderDetailId">—</div></div>
+          <button class="modal-close" id="orderDetailClose">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-grid" id="orderDetailGrid"></div>
+          <div class="hint" style="margin:4px 0 6px">Photos</div>
+          <div class="photo-strip" id="orderDetailPhotos"></div>
+          <div class="detail-item" style="margin-top:14px">
+            <div class="k">Notes</div><div class="v" id="orderDetailNotes">—</div>
+          </div>
+          <div class="detail-item" style="margin-top:10px">
+            <div class="k">Responsible note</div><div class="v" id="orderDetailAdminNote">—</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1440,16 +1645,26 @@
         const state = {
           inventory: [],
           transactions: [],
+          orders: [],
           options: { ...JSON.parse(JSON.stringify(DEFAULT_OPTIONS)), customFieldDefs: [], customFieldOptions: {} },
           page: "home",
           editingId: null,
           selectedPartId: null,
+          selectedOrderId: null,
           formPhotos: [],
+          orderFormPhotos: [],
           formPosition: "",
           formDirection: "",
           scanner: { running: false, mode: null, stream: null, controls: null, animationId: null, target: "warehouse" },
         };
         const authState = { session: null, profile: null };
+        const ORDER_STATUSES = [
+          ["requested", "Requested"], ["received", "Received"], ["processing", "Processing"],
+          ["delivery", "In Delivery"], ["arrived", "Arrived"], ["not-arrived", "Not Arrived"],
+          ["delayed", "Delayed"], ["postponed", "Postponed"], ["cancelled", "Cancelled"],
+          ["rejected", "Rejected"], ["completed", "Completed / Ready"],
+        ];
+        const ORDER_STATUS_LABELS = Object.fromEntries(ORDER_STATUSES);
         let appBootstrapped = false;
          let authSequenceLocked = false;
 
@@ -1528,7 +1743,10 @@
            const isAdmin = isAdminProfile();
           $("#currentUserLabel").textContent = authState.profile ? authState.profile.username : "—";
            $("#drawerEmployees").classList.toggle("visible", isAdmin);
+            $("#drawerAdmin").classList.toggle("visible", isAdmin);
            $("#navEmployees").classList.toggle("admin-visible", isAdmin);
+            $("#ordersEmployeeView").classList.toggle("hidden", isAdmin);
+            $("#ordersAdminView").classList.toggle("visible", isAdmin);
         }
         async function loadEmployeeProfile(userId) {
           const { data, error } = await sb.from("employees")
@@ -1785,6 +2003,66 @@
           cacheOffline(OFFLINE_TRANSACTIONS_KEY, txs);
           return txs;
         }
+        const OFFLINE_ORDERS_KEY = "qpx-offline-orders";
+        function rowToOrder(row) {
+          return {
+            id: row.id, employeeId: row.employee_id || "", employeeName: row.employee_name || "Unknown employee",
+            vehicleMake: row.vehicle_make || "", vehicleModel: row.vehicle_model || "",
+            vehicleYear: row.vehicle_year || "", plateNumber: row.plate_number || "",
+            partType: row.part_type || "", partLocation: row.part_location || "",
+            notes: row.notes || "", photos: Array.isArray(row.photos) ? row.photos : [],
+            status: row.status || "requested", adminNote: row.admin_note || "",
+            createdAt: row.created_at, updatedAt: row.updated_at, completedAt: row.completed_at,
+          };
+        }
+        function orderToRow(order) {
+          return {
+            id: order.id, employee_id: order.employeeId, employee_name: order.employeeName,
+            vehicle_make: order.vehicleMake, vehicle_model: order.vehicleModel,
+            vehicle_year: order.vehicleYear || null, plate_number: order.plateNumber,
+            part_type: order.partType, part_location: order.partLocation || null,
+            notes: order.notes || null, photos: order.photos || [], status: order.status || "requested",
+            admin_note: order.adminNote || null, updated_at: order.updatedAt || new Date().toISOString(),
+            completed_at: order.completedAt || null,
+          };
+        }
+        async function fetchOrders() {
+          const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false });
+          if (error) {
+            console.error(error);
+            const cached = readOfflineCache(OFFLINE_ORDERS_KEY);
+            if (cached) {
+              $("#ordersSyncStatus").textContent = "Offline copy";
+              showToast("Orders database is unavailable — showing the last saved copy.", true);
+              return cached;
+            }
+            $("#ordersSyncStatus").textContent = "Database setup required";
+            showToast("Run the orders SQL setup before using shared orders.", true);
+            return [];
+          }
+          const orders = (data || []).map(rowToOrder);
+          cacheOffline(OFFLINE_ORDERS_KEY, orders);
+          $("#ordersSyncStatus").textContent = "Shared database";
+          return orders;
+        }
+        async function insertOrderRemote(order) {
+          const { error } = await sb.from("orders").insert(orderToRow(order));
+          if (error) { console.error(error); showToast("The order could not be saved to the database.", true); return false; }
+          return true;
+        }
+        async function updateOrderRemote(id, patch) {
+          const row = {};
+          const mapping = {
+            employeeName: "employee_name", vehicleMake: "vehicle_make", vehicleModel: "vehicle_model",
+            vehicleYear: "vehicle_year", plateNumber: "plate_number", partType: "part_type",
+            partLocation: "part_location", notes: "notes", photos: "photos", status: "status",
+            adminNote: "admin_note", updatedAt: "updated_at", completedAt: "completed_at",
+          };
+          Object.keys(patch || {}).forEach((key) => { if (mapping[key]) row[mapping[key]] = patch[key]; });
+          const { error } = await sb.from("orders").update(row).eq("id", id);
+          if (error) { console.error(error); showToast("The order could not be updated.", true); return false; }
+          return true;
+        }
         async function saveOptions() {
           const payload = {
             vehicle: state.options.vehicle, category: state.options.category,
@@ -1860,7 +2138,8 @@
           const allPhotoFolders = state.inventory.map((p) => p.id);
           const { error: e1 } = await sb.from("transactions").delete().neq("id", "00000000-0000-0000-0000-000000000000");
           const { error: e2 } = await sb.from("parts").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-          if (e1 || e2) { showToast("Failed to clear data in the database.", true); console.error(e1 || e2); return false; }
+          const { error: e3 } = await sb.from("orders").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+          if (e1 || e2 || e3) { showToast("Failed to clear data in the database.", true); console.error(e1 || e2 || e3); return false; }
           for (const id of allPhotoFolders) deletePartPhotoFolder(id);
           return true;
         }
@@ -2059,7 +2338,12 @@
           if (page === "home") renderHome();
           if (page === "warehouse") renderWarehouseList();
           if (page === "parts") renderPartsSearch();
-          if (page === "admin") renderOptionsManager();
+           if (page === "orders") renderOrdersPage();
+           if (page === "admin" && !isAdminProfile()) {
+             showToast("Only a responsible user can view Admin & Reports.", true);
+             return switchPage("home");
+           }
+           if (page === "admin") renderOptionsManager();
           if (page === "employees" && !isAdminProfile()) {
             showToast("Only a responsible user can manage employees.", true);
             return switchPage("home");
@@ -2600,6 +2884,10 @@
         $("#menuBtn").addEventListener("click", () => { setAuthenticatedUi(); openDrawer(); });
         drawerOverlay.addEventListener("click", (e) => { if (e.target === drawerOverlay) closeDrawer(); });
         $("#drawerHome").addEventListener("click", () => switchPage("home"));
+         $("#drawerAdmin").addEventListener("click", () => {
+           if (!isAdminProfile()) return showToast("Only a responsible user can view Admin & Reports.", true);
+           switchPage("admin");
+         });
         $("#drawerEmployees").addEventListener("click", openEmployeeManagement);
         $("#drawerTheme").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light"));
         $("#themeToggle").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light"));
@@ -2614,12 +2902,13 @@
         $("#navLogout").addEventListener("click", signOutAndReload);
         $("#drawerExport").addEventListener("click", exportCSV);
         $("#drawerClearAll").addEventListener("click", async () => {
-          if (!state.inventory.length && !state.transactions.length) return showToast("No data to delete.", true);
-          if (!window.confirm("This will permanently delete all parts and transactions from the database. Are you sure?")) return;
+          if (!state.inventory.length && !state.transactions.length && !state.orders.length) return showToast("No data to delete.", true);
+          if (!window.confirm("This will permanently delete all parts, transactions, and orders from the database. Are you sure?")) return;
           const ok = await clearAllRemote();
           if (!ok) return;
-          state.inventory = []; state.transactions = [];
+          state.inventory = []; state.transactions = []; state.orders = [];
           closeDrawer(); renderHome(); renderWarehouseList(); renderPartsSearch();
+          renderOrdersPage();
           showToast("All data has been deleted.");
         });
 
@@ -2652,6 +2941,302 @@
           switchPage("parts");
           openDetail(id);
         });
+
+        // ===================================================================
+        // ORDERS — shared employee/responsible workflow
+        // ===================================================================
+        function orderStatusClass(status) { return status || "requested"; }
+        function orderStatusLabel(status) { return ORDER_STATUS_LABELS[status] || "Requested"; }
+        function orderMatches(order, query) {
+          const q = (query || "").trim().toLowerCase();
+          if (!q) return true;
+          return [order.vehicleMake, order.vehicleModel, order.vehicleYear, order.plateNumber,
+            order.partType, order.partLocation, order.notes, order.employeeName, order.status,
+            orderStatusLabel(order.status)].some((value) => String(value || "").toLowerCase().includes(q));
+        }
+        function orderEmptyHtml(message = "No orders to display.") {
+          return `<div class="order-empty"><div class="emoji">🧾</div>${escapeHtml(message)}</div>`;
+        }
+        function renderOrderCard(order, admin = false) {
+          const photo = Array.isArray(order.photos) && order.photos[0] ? order.photos[0] : "";
+          const vehicle = `${order.vehicleMake || "Vehicle"} ${order.vehicleModel || ""}`.trim();
+          const controls = admin ? `
+            <div class="order-admin-actions" data-order-controls>
+              <select data-order-status="${escapeHtml(order.id)}" aria-label="Change order status">
+                ${ORDER_STATUSES.map(([value, label]) => `<option value="${value}" ${value === order.status ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
+              </select>
+              <button type="button" class="secondary-button" data-order-complete="${escapeHtml(order.id)}">✓ Confirm Complete</button>
+              <button type="button" class="ghost-button" data-order-note="${escapeHtml(order.id)}">＋ Add Note</button>
+            </div>` : "";
+          return `
+            <article class="order-card" data-order-id="${escapeHtml(order.id)}">
+              <div class="order-card-media" data-order-photo="${photo ? escapeHtml(photo) : ""}">
+                ${photo ? `<img src="${escapeHtml(photo)}" alt="${escapeHtml(vehicle)}" loading="lazy" />` : `<div class="order-card-placeholder">🚗</div>`}
+              </div>
+              <div class="order-card-scroll" data-order-scroll>
+                <div class="order-main">
+                  <h4>${escapeHtml(vehicle)}</h4>
+                  <div class="order-part">${escapeHtml(order.partType || "Part not specified")}</div>
+                  <div class="order-id">#${escapeHtml(String(order.id).slice(0, 8).toUpperCase())}</div>
+                </div>
+                <div class="order-field"><span class="k">Plate number</span><span class="v">${escapeHtml(order.plateNumber || "—")}</span></div>
+                <div class="order-field"><span class="k">Year</span><span class="v">${escapeHtml(order.vehicleYear || "—")}</span></div>
+                <div class="order-field"><span class="k">Part location</span><span class="v">${escapeHtml(order.partLocation || "—")}</span></div>
+                <div class="order-field"><span class="k">Submitted</span><span class="v">${escapeHtml(order.createdAt ? formatDateTime(order.createdAt) : "—")}</span></div>
+                ${order.notes ? `<div class="order-field"><span class="k">Note</span><span class="v order-note-preview" title="${escapeHtml(order.notes)}">${escapeHtml(order.notes)}</span></div>` : ""}
+              </div>
+              <div class="order-fixed-status" data-order-open>
+                <span class="order-status-pill ${orderStatusClass(order.status)}">${escapeHtml(orderStatusLabel(order.status))}</span>
+                <div class="order-requester">Requested by<strong>${escapeHtml(order.employeeName || "Unknown employee")}</strong></div>
+              </div>
+              ${controls}
+            </article>`;
+        }
+        function wireOrderList(container) {
+          if (container.dataset.ordersWired) return;
+          container.dataset.ordersWired = "1";
+          let drag = null;
+          container.addEventListener("pointerdown", (event) => {
+            if (event.pointerType === "touch") return;
+            const scroll = event.target.closest("[data-order-scroll]");
+            if (!scroll) return;
+            drag = { scroll, x: event.clientX, left: scroll.scrollLeft, moved: false, pointerId: event.pointerId };
+            scroll.classList.add("dragging");
+          });
+          container.addEventListener("pointermove", (event) => {
+            if (!drag || drag.pointerId !== event.pointerId) return;
+            const dx = event.clientX - drag.x;
+            if (Math.abs(dx) > 3) drag.moved = true;
+            drag.scroll.scrollLeft = drag.left - dx;
+          });
+          const endDrag = (event) => {
+            if (!drag || (event && drag.pointerId !== event.pointerId)) return;
+            drag.scroll.classList.remove("dragging");
+            if (drag.moved) drag.scroll.dataset.suppressOrderClick = "1";
+            drag = null;
+          };
+          container.addEventListener("pointerup", endDrag);
+          container.addEventListener("pointerleave", endDrag);
+          container.addEventListener("pointercancel", endDrag);
+          container.addEventListener("change", async (event) => {
+            const statusSelect = event.target.closest("[data-order-status]");
+            if (statusSelect) await changeOrderStatus(statusSelect.dataset.orderStatus, statusSelect.value);
+          });
+          container.addEventListener("click", async (event) => {
+            const complete = event.target.closest("[data-order-complete]");
+            if (complete) { await changeOrderStatus(complete.dataset.orderComplete, "completed"); return; }
+            const note = event.target.closest("[data-order-note]");
+            if (note) { await addOrderNote(note.dataset.orderNote); return; }
+            if (event.target.closest("[data-order-controls]")) return;
+            const photo = event.target.closest("[data-order-photo]");
+            if (photo && photo.dataset.orderPhoto) { openPhotoViewer(photo.dataset.orderPhoto); return; }
+            const scroll = event.target.closest("[data-order-scroll]");
+            if (scroll && scroll.dataset.suppressOrderClick) { delete scroll.dataset.suppressOrderClick; event.preventDefault(); return; }
+            const card = event.target.closest("[data-order-id]");
+            if (card) openOrderDetail(card.dataset.orderId);
+          });
+        }
+        $$(".orders-list").forEach(wireOrderList);
+        function getEmployeeOrders() {
+          const employeeId = authState.profile && authState.profile.id;
+          return state.orders.filter((order) => order.employeeId === employeeId ||
+            (isAdminProfile() && order.employeeName === (authState.profile && authState.profile.username)));
+        }
+        function renderEmployeeOrders() {
+          const query = $("#ordersEmployeeSearch").value;
+          const orders = getEmployeeOrders().filter((order) => orderMatches(order, query));
+          const ready = orders.filter((order) => order.status === "completed");
+          const current = orders.filter((order) => order.status !== "completed");
+          $("#employeeCurrentCount").textContent = current.length;
+          $("#employeeReadyCount").textContent = ready.length;
+          $("#employeeCurrentOrders").innerHTML = current.length ? current.map((o) => renderOrderCard(o)).join("") : orderEmptyHtml(query ? "No current orders match your search." : "You have no current orders.");
+          $("#employeeReadyOrders").innerHTML = ready.length ? ready.map((o) => renderOrderCard(o)).join("") : orderEmptyHtml("No parts have been marked ready yet.");
+        }
+        function renderAdminOrders() {
+          const query = $("#ordersAdminSearch").value;
+          const orders = state.orders.filter((order) => orderMatches(order, query));
+          const newest = orders.filter((order) => order.status === "requested");
+          const completed = orders.filter((order) => order.status === "completed");
+          const activeStatuses = ORDER_STATUSES.filter(([value]) => !["requested", "completed"].includes(value));
+          $("#adminNewCount").textContent = `${newest.length} order${newest.length === 1 ? "" : "s"}`;
+          $("#adminCompletedCount").textContent = `${completed.length} order${completed.length === 1 ? "" : "s"}`;
+          $("#adminNewOrders").innerHTML = newest.length ? newest.map((o) => renderOrderCard(o, true)).join("") : orderEmptyHtml("No new requests.");
+          $("#adminCompletedOrders").innerHTML = completed.length ? completed.map((o) => renderOrderCard(o, true)).join("") : orderEmptyHtml("No completed orders.");
+          $("#adminStatusSections").innerHTML = activeStatuses.map(([value, label]) => {
+            const bucket = orders.filter((order) => order.status === value);
+            return `<div class="order-section-title"><h3>${escapeHtml(label)}</h3><span>${bucket.length} order${bucket.length === 1 ? "" : "s"}</span></div>
+              <div class="orders-list" data-status-list="${escapeHtml(value)}">${bucket.length ? bucket.map((o) => renderOrderCard(o, true)).join("") : orderEmptyHtml(`No orders in ${label.toLowerCase()}.`)}</div>`;
+          }).join("");
+          $$("#adminStatusSections .orders-list").forEach(wireOrderList);
+          $("#orderAdminSummary").innerHTML = [
+            ["All Orders", orders.length], ["New Requests", newest.length],
+            ["In Progress", orders.filter((o) => !["requested", "completed", "cancelled", "rejected"].includes(o.status)).length],
+            ["Ready", completed.length],
+          ].map(([label, value]) => `<div class="order-summary-box"><div class="v">${formatNumber(value)}</div><div class="l">${label}</div></div>`).join("");
+        }
+        function renderOrdersPage() {
+          if (isAdminProfile()) renderAdminOrders();
+          else renderEmployeeOrders();
+        }
+        function resetOrderForm() {
+          $("#orderForm").reset();
+          state.orderFormPhotos = [];
+          renderOrderPhotoStrip();
+        }
+        function renderOrderPhotoStrip() {
+          const strip = $("#orderPhotoStrip");
+          const add = strip.querySelector(".photo-add");
+          $$(".photo-thumb", strip).forEach((el) => el.remove());
+          state.orderFormPhotos.forEach((src, index) => {
+            const thumb = document.createElement("div");
+            thumb.className = "photo-thumb";
+            thumb.innerHTML = `<img src="${escapeHtml(src)}" data-order-photo-index="${index}" /><button type="button" class="remove-photo" data-order-photo-remove="${index}">×</button>`;
+            strip.insertBefore(thumb, add);
+          });
+        }
+        $("#orderPhotoInput").addEventListener("change", async (event) => {
+          for (const file of Array.from(event.target.files || [])) {
+            try { state.orderFormPhotos.push(await downscaleImage(file)); } catch (e) { console.error(e); }
+          }
+          event.target.value = "";
+          renderOrderPhotoStrip();
+        });
+        $("#orderPhotoStrip").addEventListener("click", (event) => {
+          const remove = event.target.closest("[data-order-photo-remove]");
+          if (remove) { state.orderFormPhotos.splice(Number(remove.dataset.orderPhotoRemove), 1); renderOrderPhotoStrip(); return; }
+          const img = event.target.closest("[data-order-photo-index]");
+          if (img) openPhotoViewer(img.src);
+        });
+        function openOrderDetail(id) {
+          const order = state.orders.find((item) => item.id === id);
+          if (!order) return;
+          state.selectedOrderId = id;
+          const vehicle = `${order.vehicleMake || "Vehicle"} ${order.vehicleModel || ""}`.trim();
+          $("#orderDetailTitle").textContent = vehicle;
+          $("#orderDetailId").textContent = `Order #${String(order.id).slice(0, 8).toUpperCase()} · ${orderStatusLabel(order.status)}`;
+          $("#orderDetailGrid").innerHTML = [
+            ["Plate Number", order.plateNumber], ["Year", order.vehicleYear], ["Part Type", order.partType],
+            ["Part Location", order.partLocation], ["Requested By", order.employeeName], ["Submitted", order.createdAt ? formatDateTime(order.createdAt) : "—"],
+            ["Last Updated", order.updatedAt ? formatDateTime(order.updatedAt) : "—"],
+          ].map(([key, value]) => `<div class="detail-item"><div class="k">${escapeHtml(key)}</div><div class="v">${escapeHtml(value || "—")}</div></div>`).join("");
+          $("#orderDetailNotes").textContent = order.notes || "No employee note.";
+          $("#orderDetailAdminNote").textContent = order.adminNote || "No responsible note.";
+          $("#orderDetailPhotos").innerHTML = order.photos.length
+            ? order.photos.map((src) => `<img class="order-detail-photo" src="${escapeHtml(src)}" alt="" />`).join("")
+            : `<div class="hint">No photos attached.</div>`;
+          $("#orderDetailPhotos").onclick = (event) => { const img = event.target.closest("img"); if (img) openPhotoViewer(img.src); };
+          $("#orderDetailModal").classList.add("open");
+        }
+        const orderDetailModal = $("#orderDetailModal");
+        $("#orderDetailClose").addEventListener("click", () => { orderDetailModal.classList.remove("open"); state.selectedOrderId = null; });
+        orderDetailModal.addEventListener("click", (event) => { if (event.target === orderDetailModal) orderDetailModal.classList.remove("open"); });
+        async function changeOrderStatus(id, status) {
+          const order = state.orders.find((item) => item.id === id);
+          if (!order || !ORDER_STATUS_LABELS[status]) return;
+          const updatedAt = new Date().toISOString();
+          const patch = { status, updatedAt, completedAt: status === "completed" ? updatedAt : null };
+          if (!(await updateOrderRemote(id, patch))) return;
+          Object.assign(order, patch);
+          cacheOffline(OFFLINE_ORDERS_KEY, state.orders);
+          renderOrdersPage();
+          showToast(`Order marked ${ORDER_STATUS_LABELS[status].toLowerCase()}.`);
+        }
+        async function addOrderNote(id) {
+          const order = state.orders.find((item) => item.id === id);
+          if (!order) return;
+          const note = window.prompt("Responsible note:", order.adminNote || "");
+          if (note === null) return;
+          const patch = { adminNote: note.trim(), updatedAt: new Date().toISOString() };
+          if (!(await updateOrderRemote(id, patch))) return;
+          Object.assign(order, patch);
+          cacheOffline(OFFLINE_ORDERS_KEY, state.orders);
+          renderOrdersPage();
+          showToast("Responsible note saved.");
+        }
+        let isSavingOrder = false;
+        $("#orderForm").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          if (isSavingOrder) return;
+          const profile = authState.profile;
+          if (!profile) return showToast("Sign in before submitting an order.", true);
+          const values = {
+            vehicleMake: $("#orderVehicleMake").value.trim(), vehicleModel: $("#orderVehicleModel").value.trim(),
+            vehicleYear: $("#orderVehicleYear").value.trim(), plateNumber: $("#orderPlateNumber").value.trim(),
+            partType: $("#orderPartType").value.trim(), partLocation: $("#orderPartLocation").value.trim(),
+            notes: $("#orderNotes").value.trim(),
+          };
+          if (Object.values(values).slice(0, 5).some((value) => !value)) return showToast("Complete all required order fields.", true);
+          isSavingOrder = true;
+          $("#submitOrderBtn").disabled = true;
+          const id = uid();
+          try {
+            const photos = await uploadPhotos(state.orderFormPhotos, `orders/${id}`);
+            const order = {
+              id, employeeId: profile.id, employeeName: profile.username, ...values, photos,
+              status: "requested", adminNote: "", createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(), completedAt: null,
+            };
+            if (await insertOrderRemote(order)) {
+              state.orders.unshift(order);
+              cacheOffline(OFFLINE_ORDERS_KEY, state.orders);
+              resetOrderForm();
+              renderOrdersPage();
+              showToast("Order submitted to the responsible team.");
+            }
+          } finally {
+            $("#submitOrderBtn").disabled = false;
+            isSavingOrder = false;
+          }
+        });
+        $("#resetOrderBtn").addEventListener("click", resetOrderForm);
+        $$(".orders-tab").forEach((tab) => tab.addEventListener("click", () => {
+          $$(".orders-tab").forEach((item) => item.classList.toggle("active", item === tab));
+          const selected = tab.dataset.orderEmployeeTab;
+          $("#newOrderPanel").style.display = selected === "new" ? "" : "none";
+          $("#employeeOrdersPanel").style.display = selected === "new" ? "none" : "";
+          $("#employeeCurrentOrders").style.display = selected === "current" ? "" : "none";
+          $("#employeeReadyOrders").style.display = selected === "ready" ? "" : "none";
+          if (selected !== "new") renderEmployeeOrders();
+        }));
+        $("#ordersEmployeeSearch").addEventListener("input", renderEmployeeOrders);
+        $("#ordersEmployeeClear").addEventListener("click", () => { $("#ordersEmployeeSearch").value = ""; renderEmployeeOrders(); });
+        $("#ordersAdminSearch").addEventListener("input", renderAdminOrders);
+        $("#ordersAdminClear").addEventListener("click", () => { $("#ordersAdminSearch").value = ""; renderAdminOrders(); });
+        $("#printSelectedOrder").addEventListener("click", () => printOrder(state.selectedOrderId));
+        $("#printOrdersReport").addEventListener("click", printOrdersReport);
+
+        function printOrder(id) {
+          const order = state.orders.find((item) => item.id === id);
+          if (!order) return showToast("Open an order first, then click Print Order.", true);
+          const vehicle = `${order.vehicleMake} ${order.vehicleModel}`.trim();
+          const win = window.open("", "_blank");
+          if (!win) return showToast("Please allow pop-ups to print the order.", true);
+          win.document.write(`<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Parts Order</title><style>
+            body{font-family:Arial,sans-serif;color:#111;margin:32px}h1{font-size:22px;margin:0 0 5px}.meta{color:#555;font-size:13px;margin-bottom:22px}
+            .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.item{border:1px solid #ddd;border-radius:8px;padding:10px}.k{font-size:10px;color:#666;text-transform:uppercase}.v{font-weight:700;margin-top:4px}
+            .notes{border:1px solid #ddd;border-radius:8px;padding:12px;margin-top:14px;white-space:pre-wrap} @media print{body{margin:12mm}}
+          </style></head><body><h1>Quality Part X — Parts Order</h1>
+            <div class="meta">Order #${escapeHtml(String(order.id).slice(0, 8).toUpperCase())} · ${escapeHtml(orderStatusLabel(order.status))} · ${escapeHtml(formatDateTime(order.createdAt))}</div>
+            <h2>${escapeHtml(vehicle)}</h2><div class="grid">
+            ${[["Plate Number", order.plateNumber],["Year",order.vehicleYear],["Part Type",order.partType],["Part Location",order.partLocation],["Requested By",order.employeeName],["Updated",order.updatedAt ? formatDateTime(order.updatedAt) : "—"]].map(([k,v])=>`<div class="item"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v || "—")}</div></div>`).join("")}</div>
+            <div class="notes"><b>Employee notes</b><br>${escapeHtml(order.notes || "No notes.")}</div>
+            <div class="notes"><b>Responsible note</b><br>${escapeHtml(order.adminNote || "No note.")}</div>
+          </body></html>`);
+          win.document.close(); win.focus(); setTimeout(() => win.print(), 250);
+        }
+        function printOrdersReport() {
+          if (!state.orders.length) return showToast("There are no orders to print.", true);
+          const grouped = ORDER_STATUSES.map(([status, label]) => [label, state.orders.filter((order) => order.status === status)]).filter(([, rows]) => rows.length);
+          const win = window.open("", "_blank");
+          if (!win) return showToast("Please allow pop-ups to print the report.", true);
+          win.document.write(`<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Orders Report</title><style>
+            body{font-family:Arial,sans-serif;color:#111;margin:24px}h1{font-size:21px}.meta{color:#555;font-size:12px;margin-bottom:18px}
+            h2{font-size:15px;border-bottom:2px solid #111;padding-bottom:5px;margin-top:24px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:7px;border-bottom:1px solid #ddd}th{font-size:10px;text-transform:uppercase;color:#555}
+            @media print{body{margin:10mm}h2{page-break-after:avoid}}
+          </style></head><body><h1>Quality Part X — Orders Report</h1><div class="meta">Printed ${escapeHtml(new Date().toLocaleString("en-US"))} · ${state.orders.length} orders</div>
+          ${grouped.map(([label, rows]) => `<h2>${escapeHtml(label)} (${rows.length})</h2><table><thead><tr><th>Vehicle</th><th>Plate</th><th>Part</th><th>Employee</th><th>Updated</th></tr></thead><tbody>${rows.map((o) => `<tr><td>${escapeHtml(`${o.vehicleMake} ${o.vehicleModel}`)}</td><td>${escapeHtml(o.plateNumber)}</td><td>${escapeHtml(o.partType)}</td><td>${escapeHtml(o.employeeName)}</td><td>${escapeHtml(o.updatedAt ? formatDateTime(o.updatedAt) : "—")}</td></tr>`).join("")}</tbody></table>`).join("")}</body></html>`);
+          win.document.close(); win.focus(); setTimeout(() => win.print(), 250);
+        }
 
         // ===================================================================
         // SEARCH helper
@@ -3682,14 +4267,15 @@
           if (quickSearchModal.classList.contains("open")) closeQuickSearch();
           if (photoViewModal.classList.contains("open")) photoViewModal.classList.remove("open");
           if (partDetailModal.classList.contains("open")) { partDetailModal.classList.remove("open"); state.selectedPartId = null; }
+           if (orderDetailModal.classList.contains("open")) { orderDetailModal.classList.remove("open"); state.selectedOrderId = null; }
           if (drawerOverlay.classList.contains("open")) closeDrawer();
         });
 
         // ===== Init =====
         async function bootstrap() {
           showToast("Loading data from the database…");
-          const [inventory, options, transactions] = await Promise.all([
-            fetchInventory(), fetchOptions(), fetchTransactions(),
+          const [inventory, options, transactions, orders] = await Promise.all([
+            fetchInventory(), fetchOptions(), fetchTransactions(), fetchOrders(),
           ]);
           state.inventory = inventory;
           state.options = options;
@@ -3700,6 +4286,7 @@
           state.options.customFieldDefs = customConfig.defs || [];
           state.options.customFieldOptions = customConfig.options || {};
           state.transactions = transactions;
+          state.orders = orders;
           if (seedMissingModels()) await saveOptions();
           populateOptionFieldSelect();
           renderCustomFieldDefsList();
