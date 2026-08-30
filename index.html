@@ -746,9 +746,33 @@
       .ocb-info-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
       .ocb-info-item .l { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
       .ocb-info-item .v { font-size: .82rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .ocb-footer { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .ocb-footer { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 10px; }
       .ocb-date { flex-shrink: 0; font-size: .68rem; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
       .ocb-note { flex: 1; min-width: 0; font-size: .74rem; color: var(--muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      /* Inline status-change + complete controls on a new-order big card, so the
+         responsible user can act without opening the order. Sits between the date
+         and the status pill in the same footer row; wraps to its own line if the
+         card is too narrow to fit all three. */
+      .ocb-admin-controls { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1 1 160px; min-width: 0; order: 3; flex-basis: 100%; }
+      @media (min-width: 420px) {
+        .ocb-admin-controls { flex-basis: auto; order: 0; }
+      }
+      .ocb-status-select {
+        flex: 1 1 auto; min-width: 0; max-width: 150px; height: 30px; padding: 0 8px; border-radius: 999px;
+        border: 1px solid var(--border); background: var(--bg-soft); color: var(--text);
+        font-size: .68rem; font-weight: 800;
+      }
+      .ocb-complete-btn {
+        flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 12px;
+        border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+        font-size: .68rem; font-weight: 850; white-space: nowrap; cursor: pointer;
+      }
+      .ocb-complete-btn:hover { filter: brightness(1.06); }
+      .ocb-note-full {
+        margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg-soft);
+        border: 1px solid var(--border); font-size: .78rem; color: var(--muted-strong); line-height: 1.45;
+        white-space: pre-wrap; word-break: break-word;
+      }
 
       /* Row group — orders past "requested" render as a compact scrollable list, like the Home page item rows */
       .order-row-group { border: 1px solid var(--border); background: var(--panel-solid); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
@@ -2576,6 +2600,14 @@
         attachCombobox($("#partType"), () => state.options.category);
         attachCombobox($("#reportVehicle"), () => state.options.vehicle);
         attachCombobox($("#reportCategory"), () => state.options.category);
+        // The employee's "request a part" form reads from the exact same shared
+        // option lists as the inventory form above — any make, model, year, or
+        // part type an admin adds there instantly becomes a suggestion here too,
+        // for every employee, since it's the same state.options data from Supabase.
+        attachCombobox($("#orderVehicleMake"), () => state.options.vehicle);
+        attachCombobox($("#orderVehicleModel"), () => state.options.model[$("#orderVehicleMake").value.trim()] || []);
+        attachCombobox($("#orderVehicleYear"), () => sortedYears(state.options.year));
+        attachCombobox($("#orderPartType"), () => state.options.category);
         // Clear a stale model whenever the vehicle make changes.
         $("#vehicleType").addEventListener("change", () => {
           const models = state.options.model[$("#vehicleType").value.trim()] || [];
@@ -3084,6 +3116,18 @@
         function renderOrderCardBig(order) {
           const photo = Array.isArray(order.photos) && order.photos[0] ? order.photos[0] : "";
           const vehicle = `${order.vehicleMake || "Vehicle"} ${order.vehicleModel || ""}`.trim();
+          const admin = isAdminProfile();
+          // Admin gets the status dropdown + confirm-complete button inline on the card
+          // itself (between the date and the status pill), so a new order can be
+          // actioned without opening the detail view. Any note moves below.
+          const middle = admin
+            ? `<div class="ocb-admin-controls" data-order-admin-controls>
+                 <select class="ocb-status-select" data-order-status-select="${escapeHtml(order.id)}" title="Change status">
+                   ${ORDER_STATUSES.map(([value, label]) => `<option value="${value}" ${value === order.status ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
+                 </select>
+                 <button class="ocb-complete-btn" type="button" data-order-complete="${escapeHtml(order.id)}">✔️ Mark Complete</button>
+               </div>`
+            : `<span class="ocb-note" title="${order.notes ? escapeHtml(order.notes) : ""}">${order.notes ? escapeHtml(order.notes) : "—"}</span>`;
           return `
             <article class="order-card-big" data-order-id="${escapeHtml(order.id)}">
               <div class="ocb-media" data-order-photo="${photo ? escapeHtml(photo) : ""}">
@@ -3102,9 +3146,10 @@
                 </div>
                 <div class="ocb-footer">
                   <span class="ocb-date">${escapeHtml(order.createdAt ? formatDateShort(order.createdAt) : "—")}</span>
-                  <span class="ocb-note" title="${order.notes ? escapeHtml(order.notes) : ""}">${order.notes ? escapeHtml(order.notes) : "—"}</span>
+                  ${middle}
                   <span class="order-status-pill ${orderStatusClass(order.status)}">${escapeHtml(orderStatusLabel(order.status))}</span>
                 </div>
+                ${admin && order.notes ? `<div class="ocb-note-full">📝 ${escapeHtml(order.notes)}</div>` : ""}
               </div>
             </article>`;
         }
@@ -3177,12 +3222,22 @@
           container.addEventListener("pointerleave", endDrag);
           container.addEventListener("pointercancel", endDrag);
           container.addEventListener("click", (event) => {
+            const controls = event.target.closest("[data-order-admin-controls]");
+            if (controls) {
+              const completeBtn = event.target.closest("[data-order-complete]");
+              if (completeBtn) changeOrderStatus(completeBtn.dataset.orderComplete, "completed");
+              return; // never open the detail modal from the inline status/complete controls
+            }
             const photo = event.target.closest("[data-order-photo]");
             if (photo && photo.dataset.orderPhoto) { openPhotoViewer(photo.dataset.orderPhoto); return; }
             const scroll = event.target.closest("[data-order-scroll]");
             if (scroll && scroll.dataset.suppressOrderClick) { delete scroll.dataset.suppressOrderClick; event.preventDefault(); return; }
             const card = event.target.closest("[data-order-id]");
             if (card) openOrderDetail(card.dataset.orderId);
+          });
+          container.addEventListener("change", (event) => {
+            const select = event.target.closest("[data-order-status-select]");
+            if (select) changeOrderStatus(select.dataset.orderStatusSelect, select.value);
           });
         }
         $$(".orders-list").forEach(wireOrderList);
