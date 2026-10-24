@@ -6,19 +6,21 @@
 <title>Quality Part X</title>
 <meta name="theme-color" content="#0C111B">
 <script>
-/* Apply the saved theme before first paint (saved -> system -> dark) */
+/* Apply the saved theme before first paint (saved -> light on first visit) */
 (function () {
   var t = null;
   try { t = localStorage.getItem("qpx-theme"); } catch (e) {}
   if (t !== "light" && t !== "dark") {
-    t = (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+    t = "light"; /* first visit: light mode */
   }
   document.documentElement.setAttribute("data-theme", t);
+  var l = "en"; try { l = localStorage.getItem("qpx-lang") === "ar" ? "ar" : "en"; } catch (e) {}
+  document.documentElement.setAttribute("lang", l); document.documentElement.setAttribute("dir", l === "ar" ? "rtl" : "ltr");
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Cairo:wght@400;600&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
 /* ===== 1. DESIGN TOKENS ===== */
@@ -425,6 +427,17 @@ textarea.field { padding:10px 12px; min-height:88px; resize:vertical; font-famil
 .clist button { display:block; width:100%; min-height:44px; padding:0 12px; border:0; background:none; border-radius:var(--r-btn); text-align:left; font-size:16px; }
 .clist button:hover { background:var(--surface-hover); }
 .clist .none { padding:12px; font-size:14px; color:var(--muted); }
+/* quick-add picker: every drop-down is a searchable list with a "+ Add" row pinned at the bottom */
+.pk-native { display:none; }
+.pk .field { padding-right:40px; text-overflow:ellipsis; cursor:pointer; }
+.pk-chev { position:absolute; right:0; top:0; width:40px; height:44px; display:grid; place-items:center; color:var(--muted); pointer-events:none; }
+.pk[aria-expanded="true"] .pk-chev svg { transform:rotate(180deg); }
+.pk.dis .field { opacity:.6; cursor:not-allowed; }
+.clist button.on { background:var(--accent-12); font-weight:600; }
+.clist .addrow { display:flex; align-items:center; gap:8px; position:sticky; bottom:-4px; margin-top:4px; border-top:1px solid var(--border); border-radius:0 0 var(--r-btn) var(--r-btn);
+  background:var(--surface); color:var(--accent); font-size:14px; font-weight:600; text-align:left; }
+.clist .addrow:hover { background:var(--accent-12); }
+.clist .addrow:disabled { opacity:.6; }
 .ph-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; margin-bottom:8px; }
 .ph-grid:empty { display:none; }
 .ph-grid .pt { position:relative; aspect-ratio:1; background:var(--surface-hover); border:1px solid var(--border); border-radius:var(--r-card); overflow:hidden; }
@@ -548,11 +561,14 @@ button.tile:hover { background:var(--surface-hover); }
 .phead h1 { margin:0; font-size:20px; line-height:26px; font-weight:600; }
 .phead p { margin:0; font-size:14px; line-height:20px; color:var(--muted); }
 @media (min-width:1024px) { .phead h1.mo { display:none; } }
-.rf { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-@media (min-width:1024px) { .rf { grid-template-columns:repeat(4,1fr); } }
+.rf { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+@media (min-width:1024px) { .rf { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+.rf > div { min-width:0; }
+.rf .field { min-width:0; max-width:100%; }
+.rf input[type=date] { display:block; }
 .rf label { display:block; margin-bottom:4px; font-size:14px; font-weight:600; }
-.rbtns { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-.rbtns .sp { flex:1; }
+.rbtns { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
+.rbtns .btn { min-width:0; width:100%; justify-content:center; text-align:center; padding-inline:8px; gap:6px; line-height:1.25; white-space:normal; }
 .sums { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0; }
 @media (min-width:1024px) { .sums { grid-template-columns:repeat(4,1fr); } }
 .tblwrap { overflow-x:auto; padding:0; }
@@ -633,6 +649,41 @@ label.sw input:checked::after { left:18px; }
 .pv { max-height:220px; overflow:auto; border:1px solid var(--border); border-radius:var(--r-btn); margin-top:12px; }
 .pv .tbl th, .pv .tbl td { padding:8px 12px; }
 .sumline { margin-top:12px; font-size:14px; line-height:20px; }
+
+body.lifting #view { padding-bottom:75vh; }
+body.lifting .overlay .db { padding-bottom:60vh; }
+/* ===== LANGUAGE (EN / AR) + RTL ===== */
+.hbtns { display:flex; align-items:center; gap:2px; }
+.flag { display:block; width:30px; height:20px; border-radius:4px; overflow:hidden; box-shadow:0 0 0 1px var(--border); }
+.flag svg { display:block; width:100%; height:100%; }
+.auth-lang-toggle { right:68px; }
+:root[lang="ar"] { --font:Cairo,Inter,system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif; }
+[dir="rtl"] .dirflip { transform:scaleX(-1); }
+[dir="rtl"] .fab { right:auto; left:16px; }
+[dir="rtl"] .auth-theme-toggle { right:auto; left:18px; }
+[dir="rtl"] .auth-lang-toggle { right:auto; left:68px; }
+[dir="rtl"] .menu-item, [dir="rtl"] .auth-field, [dir="rtl"] .auth-pin-label, [dir="rtl"] .auth-copy-content, [dir="rtl"] .plist button,
+[dir="rtl"] .clist button, [dir="rtl"] .qa-i, [dir="rtl"] .tile, [dir="rtl"] .prow, [dir="rtl"] .tbl th { text-align:right; }
+[dir="rtl"] .tbl .n, [dir="rtl"] .tbl th.n { text-align:left; }
+[dir="rtl"] .topbar .search { margin-left:0; margin-right:auto; }
+[dir="rtl"] .topbar .search svg, [dir="rtl"] .pbar .sw svg { left:auto; right:12px; }
+[dir="rtl"] .topbar .search input, [dir="rtl"] .pbar .sw input { padding-left:12px; padding-right:40px; }
+[dir="rtl"] .pcard .pa.l { left:auto; right:8px; } [dir="rtl"] .pcard .pa.r { right:auto; left:8px; }
+[dir="rtl"] .pcard .cnt { left:auto; right:8px; } [dir="rtl"] .pcard .qb { right:auto; left:8px; }
+[dir="rtl"] .pgrid.list .pcard .cnt { left:auto; right:4px; } [dir="rtl"] .pgrid.list .pcard .qb { right:auto; left:4px; }
+[dir="rtl"] .viewer .vn.l { left:auto; right:8px; } [dir="rtl"] .viewer .vn.r { right:auto; left:8px; }
+[dir="rtl"] .pk .field { padding-right:12px; padding-left:40px; }
+[dir="rtl"] .pk-chev { right:auto; left:0; }
+[dir="rtl"] .ph-grid .main { left:auto; right:4px; }
+[dir="rtl"] .ph-grid .rm, [dir="rtl"] .ph-grid .st { right:auto; left:4px; }
+[dir="rtl"] .scan-torch { right:auto; left:8px; }
+[dir="rtl"] .arow .abw { border-left:0; border-right:1px solid var(--border); }
+@media (min-width:1024px) {
+  [dir="rtl"] .sidebar { inset:0 0 0 auto; border-right:0; border-left:1px solid var(--border); }
+  [dir="rtl"] .main { margin-left:0; margin-right:var(--sidebar-w); }
+  [dir="rtl"] #toasts { left:24px; right:auto; }
+  [dir="rtl"] .ehead .c1 { padding-left:0; padding-right:48px; }
+}
 </style>
 </head>
 <body class="guest">
@@ -643,7 +694,7 @@ label.sw input:checked::after { left:18px; }
 <header class="mhead">
   <button class="icon-btn" id="menuBtn" aria-label="Open menu"></button>
   <div class="logo" id="mLogo"></div>
-  <button class="icon-btn" data-theme-toggle aria-label="Toggle theme"></button>
+  <div class="hbtns"><button class="icon-btn" data-lang-toggle></button><button class="icon-btn" data-theme-toggle aria-label="Toggle theme"></button></div>
 </header>
 <div class="main">
   <div class="topbar">
@@ -651,6 +702,7 @@ label.sw input:checked::after { left:18px; }
     <div class="search"><span id="searchIc"></span>
       <input class="field" id="globalSearch" type="search" placeholder="Search parts" aria-label="Search parts"></div>
     <div class="tools">
+      <button class="icon-btn" data-lang-toggle></button>
       <button class="icon-btn" data-theme-toggle aria-label="Toggle theme"></button>
       <button class="icon-btn" id="csvBtn" aria-label="Export inventory"></button>
     </div>
@@ -676,7 +728,7 @@ const state = { role: null, user: null, theme: "dark" }; /* user = { id, usernam
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtNum = (n) => Number(n || 0).toLocaleString("en-GB");
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "";
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString(dloc(), { day: "2-digit", month: "short", year: "numeric" }) : "";
 const stockStatus = (q) => q <= 0 ? "out" : q <= LOW_STOCK_THRESHOLD ? "low" : "ok";
 
 /* ===== 7. ICONS (single outline set, inline SVG) ===== */
@@ -710,7 +762,7 @@ const ICONS = {
   star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'
 };
-const icon = (n, size) => '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"' + (size ? ' style="width:' + size + 'px;height:' + size + 'px"' : "") + ">" + (ICONS[n] || "") + "</svg>";
+const icon = (n, size) => '<svg class="i' + (n === "chevl" || n === "chevr" ? " dirflip" : "") + '" viewBox="0 0 24 24" aria-hidden="true"' + (size ? ' style="width:' + size + 'px;height:' + size + 'px"' : "") + ">" + (ICONS[n] || "") + "</svg>";
 
 /* ===== 8. THEME (sun while light, moon while dark) ===== */
 function applyTheme(t) {
@@ -727,6 +779,497 @@ function applyTheme(t) {
   if (row) row.innerHTML = icon(state.theme === "light" ? "sun" : "moon") + "<span>Theme: " + (state.theme === "light" ? "Light" : "Dark") + "</span>";
 }
 const toggleTheme = () => applyTheme(state.theme === "light" ? "dark" : "light");
+
+/* ===== 8b. LANGUAGE (English / Arabic). Untranslated strings simply stay in English: add them to DICT. ===== */
+const L = { lang: document.documentElement.getAttribute("lang") === "ar" ? "ar" : "en" };
+const dloc = () => (L.lang === "ar" ? "ar-EG-u-nu-latn" : "en-GB");
+const DICT = {
+"Home":"الرئيسية","Parts":"القطع","Part":"القطعة","More":"المزيد","Menu":"القائمة","Sign out":"تسجيل الخروج","Settings":"الإعدادات","Reports":"التقارير","Employees":"الموظفون","Employee":"موظف","Admin":"مدير","Add part":"إضافة قطعة","Add Part":"إضافة قطعة","Consume Part":"صرف قطعة","Consume part":"صرف قطعة","Search Parts":"البحث عن القطع","Search parts":"ابحث عن القطع","Search part name":"ابحث عن اسم القطعة","Search options":"ابحث في الخيارات",
+"Switch to dark theme":"التبديل إلى الوضع الداكن","Switch to light theme":"التبديل إلى الوضع المشرق","Toggle theme":"تغيير الوضع","Theme: Light":"الوضع: مشرق","Theme: Dark":"الوضع: داكن","Light":"مشرق","Dark":"داكن","Open menu":"فتح القائمة","Main":"الرئيسية","Close":"إغلاق",
+"Cancel":"إلغاء","Confirm":"تأكيد","Save":"حفظ","Save changes":"حفظ التغييرات","Save part":"حفظ القطعة","Delete":"حذف","Remove":"إزالة","Rename":"إعادة تسمية","Add":"إضافة","+ Add":"+ إضافة","Add new":"إضافة جديد","Edit":"تعديل","Done":"تم","Clear":"مسح","Clear form":"مسح النموذج","Clear filters":"مسح التصفية","Filter":"تصفية","All filters":"كل المرشحات","Show results":"عرض النتائج","Try again":"أعد المحاولة","Use":"استخدام","Enter":"إدخال","Import":"استيراد","Export":"تصدير","Print":"طباعة","Select":"اختر","All":"الكل","Any":"أي","None":"بدون","New":"جديد","Hide":"إخفاء","Required":"مطلوب","Loading...":"جارٍ التحميل...","Loading more...":"جارٍ تحميل المزيد...","Saving...":"جارٍ الحفظ...","Adding...":"جارٍ الإضافة...","Deleting...":"جارٍ الحذف...","Searching...":"جارٍ البحث...","Importing...":"جارٍ الاستيراد...","Unknown error":"خطأ غير معروف","Name":"الاسم","Type":"النوع","Status":"الحالة","Note":"ملاحظة","Notes":"ملاحظات","Photo":"الصورة","Photos":"الصور","Main":"الرئيسية",
+"Quantity":"الكمية","Qty":"الكمية","Position":"الموضع","Direction":"الاتجاه","Location":"الموقع","Consume":"صرف","Hide details":"إخفاء التفاصيل","Show details":"عرض التفاصيل","Make":"الماركة","Model":"الموديل","Year":"السنة","Barcode":"الباركود","Part name":"اسم القطعة","Part type":"نوع القطعة","Part Types":"أنواع القطع","Field":"الحقل","Vehicle":"المركبة","Added":"المضاف","Consumed":"المصروف","Current Stock":"المخزون الحالي","Total Units":"إجمالي الوحدات","Total Current Units":"إجمالي الوحدات الحالية","Added Today":"المضاف اليوم","Consumed Today":"المصروف اليوم","Added in Period":"المضاف خلال الفترة","Consumed in Period":"المصروف خلال الفترة","Low Stock":"مخزون منخفض","Low stock":"مخزون منخفض","Tap to view":"اضغط للعرض","All good":"كل شيء بخير","Available Parts":"القطع المتوفرة","View all":"عرض الكل","Recent Activity":"النشاط الأخير","Good morning":"صباح الخير","Good afternoon":"مساء الخير","Good evening":"مساء الخير",
+"Choose a Make first":"اختر الماركة أولاً","Choose a make first":"اختر الماركة أولاً","Choose a part name first":"اختر اسم القطعة أولاً","Choose a part type first":"اختر نوع القطعة أولاً","Select make":"اختر الماركة","Select model":"اختر الموديل","Select make first":"اختر الماركة أولاً","Select year":"اختر السنة","Select type":"اختر النوع","No options found":"لا توجد خيارات","No options yet":"لا توجد خيارات بعد","No match":"لا توجد نتيجة","Enter a 4-digit year":"أدخل سنة من 4 أرقام","Enter a 4-digit year.":"أدخل سنة من 4 أرقام.","Not a valid value":"قيمة غير صالحة","Maximum 12 photos":"الحد الأقصى 12 صورة","Enter a quantity":"أدخل الكمية","Quantity must be at least 1":"يجب ألا تقل الكمية عن 1","Take photo":"التقاط صورة","From gallery":"من المعرض","Warehouse / shelf location":"موقع المستودع / الرف","Main":"رئيسية","Set as main photo":"تعيين كصورة رئيسية","Remove photo":"إزالة الصورة","Open photo":"فتح الصورة","Open part":"فتح القطعة","Open it":"فتحها","Find an existing part":"البحث عن قطعة موجودة","Existing part":"قطعة موجودة","Choose a part name from the list, or add it with + Add":"اختر اسم القطعة من القائمة أو أضفه بزر + إضافة","No part names yet - add the first one below":"لا توجد أسماء قطع بعد - أضف الأول بالأسفل","Type the new part name":"اكتب اسم القطعة الجديد",
+"Scan barcode":"مسح الباركود","Point the camera at the barcode":"وجّه الكاميرا نحو الباركود","Enter barcode manually":"إدخال الباركود يدويًا","Requesting camera permission...":"جارٍ طلب إذن الكاميرا...","Camera ready. Point it at the barcode.":"الكاميرا جاهزة. وجّهها نحو الباركود.","Torch is not available on this camera":"الفلاش غير متوفر في هذه الكاميرا","Camera access was denied. Allow the camera for this site in your browser settings, then tap Try again.":"تم رفض الوصول إلى الكاميرا. اسمح بها لهذا الموقع من إعدادات المتصفح ثم اضغط إعادة المحاولة.","No camera was found on this device. You can enter the barcode manually.":"لم يتم العثور على كاميرا في هذا الجهاز. يمكنك إدخال الباركود يدويًا.","The camera is in use by another app. Close it and tap Try again.":"الكاميرا قيد الاستخدام في تطبيق آخر. أغلقه ثم اضغط إعادة المحاولة.","Could not start the camera. Check the camera permission and tap Try again.":"تعذر تشغيل الكاميرا. تحقق من إذن الكاميرا ثم اضغط إعادة المحاولة.","The camera needs a secure connection (HTTPS) or localhost. You can enter the barcode manually.":"تحتاج الكاميرا إلى اتصال آمن (HTTPS). يمكنك إدخال الباركود يدويًا.","This browser does not support camera access. Try the latest Chrome, Edge or Safari, or enter the barcode manually.":"هذا المتصفح لا يدعم الكاميرا. جرّب أحدث إصدار من Chrome أو Edge أو Safari، أو أدخل الباركود يدويًا.","This device cannot scan barcodes automatically. Enter the barcode manually.":"لا يستطيع هذا الجهاز مسح الباركود تلقائيًا. أدخله يدويًا.","No part found with barcode":"لا توجد قطعة بهذا الباركود",
+"You are offline. Changes cannot be saved.":"أنت غير متصل بالإنترنت. لا يمكن حفظ التغييرات.","You are offline. Showing the last saved parts.":"أنت غير متصل. تُعرض آخر القطع المحفوظة.","You are offline. Showing the last saved numbers.":"أنت غير متصل. تُعرض آخر الأرقام المحفوظة.","You are offline. Changes were not saved.":"أنت غير متصل. لم يتم حفظ التغييرات.","You are offline. Your entries are kept. Try again when connected.":"أنت غير متصل. بياناتك محفوظة، حاول مجددًا عند الاتصال.","You are offline. Export needs a connection.":"أنت غير متصل. التصدير يحتاج اتصالًا بالإنترنت.","Could not load more. Tap to retry":"تعذر تحميل المزيد. اضغط لإعادة المحاولة","Could not load parts":"تعذر تحميل القطع","Check your connection and try again.":"تحقق من اتصالك وأعد المحاولة.","No parts match your search":"لا توجد قطع مطابقة لبحثك","Try different words or clear the filters.":"جرّب كلمات أخرى أو امسح التصفية.","Switch to grid view":"التبديل إلى العرض الشبكي","Switch to list view":"التبديل إلى عرض القائمة","Could not process the photo":"تعذرت معالجة الصورة","Could not read the photo":"تعذرت قراءة الصورة","Nothing to change":"لا شيء لتغييره","Not enough stock":"المخزون غير كافٍ","Part not found":"القطعة غير موجودة","Stock changed meanwhile. Please try again.":"تغيّر المخزون في الأثناء. حاول مجددًا.","Stock updated but the activity log failed":"تم تحديث المخزون لكن تعذر تسجيل النشاط","Part saved, but the activity log failed":"تم حفظ القطعة لكن تعذر تسجيل النشاط","Delete part":"حذف القطعة","Delete this part?":"حذف هذه القطعة؟","You are not allowed to delete this part":"غير مسموح لك بحذف هذه القطعة","Part deleted":"تم حذف القطعة","Could not delete.":"تعذر الحذف.","Stock is already 0":"المخزون صفر بالفعل","This part is out of stock":"هذه القطعة نفدت من المخزون","In stock:":"في المخزون:","Did you mean":"هل تقصد","Part updated":"تم تحديث القطعة","Edit part":"تعديل القطعة","Could not save. Your entries are kept.":"تعذر الحفظ. بياناتك محفوظة.","Could not save. Your changes are kept.":"تعذر الحفظ. تغييراتك محفوظة.","Could not search. Check your connection.":"تعذر البحث. تحقق من اتصالك.","No parts match":"لا توجد قطع مطابقة","Nothing is running low":"لا شيء يقارب النفاد","Could not load low stock":"تعذر تحميل المخزون المنخفض","Type to find the part you are using.":"اكتب للعثور على القطعة التي تستخدمها.","No parts in stock match.":"لا توجد قطع متوفرة مطابقة.","No parts in stock yet.":"لا توجد قطع في المخزون بعد.","No activity yet.":"لا يوجد نشاط بعد.","Could not load Home":"تعذر تحميل الصفحة الرئيسية",
+"Inventory":"الجرد","Export inventory":"تصدير الجرد","Excel with photos":"إكسل مع الصور","Excel without photos":"إكسل بدون الصور","Every part is exported. With photos, the main (first) photo of each part is added as a small picture.":"تُصدَّر كل القطع. عند اختيار الصور تُضاف الصورة الرئيسية (الأولى) لكل قطعة كصورة صغيرة.","Preparing CSV...":"جارٍ تجهيز ملف CSV...","Preparing Excel...":"جارٍ تجهيز ملف إكسل...","Exported":"تم التصدير","Export cancelled":"تم إلغاء التصدير","Exporting photos":"جارٍ تصدير الصور","Keep this screen open. Large inventories can take a few minutes.":"أبقِ هذه الشاشة مفتوحة. قد يستغرق الجرد الكبير بضع دقائق.","Could not load the Excel library":"تعذر تحميل مكتبة إكسل","The Excel library could not load, so a CSV (opens in Excel) is exported instead.":"تعذر تحميل مكتبة إكسل، لذلك تم التصدير بصيغة CSV (تفتح في إكسل).",
+"Added and consumed stock for a period.":"المخزون المضاف والمصروف خلال فترة.","From":"من","To":"إلى","Today":"اليوم","Start":"البداية","Last 7 days":"آخر 7 أيام","Last 30 days":"آخر 30 يومًا","Run Report":"تشغيل التقرير","No report yet":"لا يوجد تقرير بعد","Choose a period and filters, then click Run Report":"اختر الفترة والمرشحات ثم اضغط تشغيل التقرير","Run the report first, then print.":"شغّل التقرير أولاً ثم اطبع.","The From date must be before the To date.":"يجب أن يكون تاريخ البداية قبل تاريخ النهاية.","Could not run the report":"تعذر تشغيل التقرير","No results":"لا توجد نتائج","No stock was added or consumed in this period for these filters. Try a wider period or clear the filters.":"لم يُضف أو يُصرف أي مخزون في هذه الفترة لهذه المرشحات. جرّب فترة أوسع أو امسح التصفية.","Quality Part X - Inventory report":"Quality Part X - تقرير الجرد",
+"Username":"اسم المستخدم","Role":"الدور","Actions":"الإجراءات","Add employee":"إضافة موظف","Edit employee":"تعديل الموظف","Delete employee":"حذف الموظف","Employee updated":"تم تحديث الموظف","Employee added":"تمت إضافة الموظف","Employee deleted":"تم حذف الموظف","Employee service unavailable":"خدمة الموظفين غير متاحة","Could not load employees":"تعذر تحميل الموظفين","No employees yet":"لا يوجد موظفون بعد","Add the first employee to let them sign in.":"أضف أول موظف ليتمكن من تسجيل الدخول.","You cannot change your own role.":"لا يمكنك تغيير دورك بنفسك.","You cannot delete your own account":"لا يمكنك حذف حسابك الخاص","You cannot delete the account you are signed in with.":"لا يمكنك حذف الحساب المسجَّل به حاليًا.","Enter a username.":"أدخل اسم المستخدم.","Enter a 4-digit PIN.":"أدخل رمزًا من 4 أرقام.","Enter all 4 digits, or leave the PIN blank to keep it.":"أدخل الأرقام الأربعة أو اترك الرمز فارغًا للإبقاء عليه.","That username is already in use.":"اسم المستخدم مستخدم بالفعل.","The employee service is not reachable. Deploy the Edge Function \"manage-employee\" and set the SUPABASE_SERVICE_ROLE_KEY secret (see README_SETUP.md), then try again.":"تعذر الوصول إلى خدمة الموظفين. انشر الدالة \"manage-employee\" وعيّن السر SUPABASE_SERVICE_ROLE_KEY (راجع README_SETUP.md) ثم أعد المحاولة.","Request failed":"فشل الطلب",
+"Form fields and the lists behind them.":"حقول النموذج والقوائم المرتبطة بها.","Makes and models":"الماركات والموديلات","Part types":"أنواع القطع","Import CSV":"استيراد CSV","Download template":"تنزيل القالب","Drop a CSV file here":"أسقط ملف CSV هنا","Import finished.":"اكتمل الاستيراد.","Skipped":"تم التخطي","Already exists":"موجود مسبقًا","Invalid":"غير صالح","Missing":"مفقود","Longer than 80 characters":"أطول من 80 حرفًا","The file is larger than 1 MB.":"حجم الملف أكبر من 1 ميغابايت.","The file is empty or could not be read.":"الملف فارغ أو تعذرت قراءته.","Too many rows (limit 5,000 per file).":"عدد الصفوف كبير جدًا (الحد 5,000 لكل ملف).","Columns: Make, Model (Model is optional). Existing makes and models are kept; duplicates are skipped.":"الأعمدة: Make, Model (الموديل اختياري). تبقى الماركات والموديلات الموجودة وتُتخطى المكررات.","Columns: Part name, Part type (Part type is optional). Existing names and types are kept; duplicates are skipped.":"الأعمدة: Part name, Part type (نوع القطعة اختياري). تبقى الأسماء والأنواع الموجودة وتُتخطى المكررات.","Core field":"حقل أساسي","Core field - part names and their types":"حقل أساسي - أسماء القطع وأنواعها","Core field - managed under each part name":"حقل أساسي - يُدار ضمن كل اسم قطعة","Core field - makes and their models":"حقل أساسي - الماركات وموديلاتها","Core field - managed under each make":"حقل أساسي - يُدار ضمن كل ماركة","Built-in list":"قائمة مدمجة","Hidden":"مخفي","Hide field":"إخفاء الحقل","Delete field":"حذف الحقل","Delete permanently":"حذف نهائيًا","Show again":"إظهار مجددًا","Reset name":"إعادة الاسم","Rename field":"إعادة تسمية الحقل","Add field":"إضافة حقل","Field name":"اسم الحقل","Field type":"نوع الحقل","Dropdown":"قائمة منسدلة","Text":"نص","Number":"رقم","Depends on":"يعتمد على","Show in search filters":"إظهار في مرشحات البحث","Enter a field name.":"أدخل اسم الحقل.","Field added":"تمت إضافة الحقل","This field is hidden. Its stored values are kept.":"هذا الحقل مخفي. القيم المخزنة محفوظة.","Part types belong to a part name. Open Part name to add, rename or remove them.":"أنواع القطع تتبع اسم القطعة. افتح \"Part name\" لإضافتها أو إعادة تسميتها أو إزالتها.","Models belong to a make. Open Make to add, rename or remove them.":"الموديلات تتبع الماركة. افتح \"Make\" لإضافتها أو إعادة تسميتها أو إزالتها.","This field has no list of options.":"هذا الحقل ليس له قائمة خيارات.","Enter a value.":"أدخل قيمة.","New value":"قيمة جديدة","New name":"اسم جديد","That value is not valid.":"هذه القيمة غير صالحة.","Nothing found.":"لم يتم العثور على شيء.","Could not save the field:":"تعذر حفظ الحقل:","Could not delete the field:":"تعذر حذف الحقل:","Could not delete:":"تعذر الحذف:","Could not save:":"تعذر الحفظ:",
+"Not allowed":"غير مسموح","This page is for admins only.":"هذه الصفحة للمدراء فقط.","Back to Home":"العودة للرئيسية","Too many sign-in attempts. Please wait a few minutes and try again.":"محاولات تسجيل دخول كثيرة. انتظر بضع دقائق وأعد المحاولة.","Incorrect username or PIN":"اسم المستخدم أو الرمز غير صحيح","Cannot reach the server. Check your internet connection and try again.":"تعذر الوصول إلى الخادم. تحقق من اتصالك بالإنترنت وأعد المحاولة.","This account is not active. Please ask an admin.":"هذا الحساب غير مفعّل. اطلب من المدير.","This account has no employee profile. Please ask an admin.":"هذا الحساب بلا ملف موظف. اطلب من المدير.","Your session has expired. Please sign in again.":"انتهت جلستك. سجّل الدخول مجددًا.","Keep every part":"تحكّم في كل قطعة","Sign in to manage stock, track activity, and keep your warehouse moving with confidence.":"سجّل الدخول لإدارة المخزون وتتبع النشاط وتسيير مستودعك بثقة.","Sign in":"تسجيل الدخول","Enter your username and four-digit password.":"أدخل اسم المستخدم وكلمة المرور المكونة من 4 أرقام.","Password — 4 digits":"كلمة المرور — 4 أرقام","Accounts are created and managed by a responsible user.":"الحسابات تُنشأ وتُدار بواسطة مسؤول.","Signed in successfully.":"تم تسجيل الدخول بنجاح.","Enter your username first.":"أدخل اسم المستخدم أولاً.","Enter your 4-digit PIN.":"أدخل رمزك المكوّن من 4 أرقام.","Checking your credentials…":"جارٍ التحقق من بياناتك…","Could not load the Supabase library. Check your connection and reload.":"تعذر تحميل مكتبة Supabase. تحقق من اتصالك وأعد تحميل الصفحة.","First":"الأول","Second":"الثاني","Third":"الثالث","Fourth":"الرابع","Untranslated options":"الخيارات غير المترجمة","Copy list":"نسخ القائمة","Copied":"تم النسخ","All options are translated.":"كل الخيارات مترجمة."
+};
+const RX = [
+ [/^Delete "(.+)" and its photos\? The history of past additions and consumptions is kept\. This cannot be undone\.$/, m => "حذف \"" + m[1] + "\" وصوره؟ يبقى سجل الإضافات والصرف السابق. لا يمكن التراجع عن ذلك."],
+ [/^Delete "(.+)"\? They will no longer be able to sign in\. This cannot be undone\.$/, m => "حذف \"" + m[1] + "\"؟ لن يتمكن من تسجيل الدخول بعد ذلك. لا يمكن التراجع."],
+ [/^Showing (\d+) parts\. Add more words to narrow down\.$/, m => "عرض " + m[1] + " قطعة. أضف كلمات أخرى لتضييق النتائج."],
+ [/^Try again in (.+)$/, m => "أعد المحاولة بعد " + m[1]],
+ [/^(\d[\d,]*) rows$/, m => arCount(numOf(m[1]), "row")],
+ [/^(Start|\d{4}-\d{2}-\d{2}) to (Today|\d{4}-\d{2}-\d{2})$/, m => (m[1] === "Start" ? "البداية" : m[1]) + " إلى " + (m[2] === "Today" ? "اليوم" : m[2])]
+];
+const PRE = [["Part saved: ","تم حفظ القطعة: "],["Export failed: ","فشل التصدير: "],["Qty ","الكمية "],["Added \"","تمت إضافة \""],["Consumed ","تم صرف "],["Parts with ","القطع التي كميتها "],["Every part has more than ","كل قطعة كميتها أكثر من "],["Period: ","الفترة: "]];
+const PREA = [["Edit ","تعديل "],["Delete ","حذف "],["Rename ","إعادة تسمية "],["Remove ","إزالة "],["Photo ","صورة "],["Add ","إضافة "],["Search ","ابحث في "],["PIN digit","رقم الرمز"]];
+/* ===== Arabic coverage extension: strings and patterns that were still showing in English ===== */
+Object.assign(DICT, {
+  "PIN":"الرمز","(you)":"(أنت)","(optional)":"(اختياري)","(first photo is Main)":"(الصورة الأولى هي الرئيسية)",
+  "(leave blank to keep the current PIN)":"(اتركه فارغًا للإبقاء على الرمز الحالي)",
+  "Decrease quantity":"إنقاص الكمية","Increase quantity":"زيادة الكمية","Decrease":"إنقاص","Increase":"زيادة",
+  "Torch":"الفلاش","Locked":"مقفل","Previous photo":"الصورة السابقة","Next photo":"الصورة التالية","Open photos":"فتح الصور",
+  "Photo viewer":"عارض الصور","Part details, swipe sideways":"تفاصيل القطعة، مرّر جانبيًا","What to import":"ما الذي تريد استيراده",
+  "Scan or type":"امسح أو اكتب","Enter username":"أدخل اسم المستخدم","Core field - cannot be deleted":"حقل أساسي - لا يمكن حذفه",
+  "Search name, vehicle, location, barcode":"ابحث بالاسم أو المركبة أو الموقع أو الباركود",
+  "Search to edit or adjust an existing part":"ابحث لتعديل قطعة موجودة أو تعديل كميتها",
+  "CSV (no photos)":"CSV (بدون صور)","or tap to choose":"أو اضغط للاختيار","A similar part already exists -":"توجد قطعة مشابهة بالفعل -",
+  "Excel library not available":"مكتبة إكسل غير متاحة","Run 08_custom_fields_upgrade.sql first (the Number type is not allowed yet).":"شغّل الملف 08_custom_fields_upgrade.sql أولاً (نوع الرقم غير مسموح بعد).",
+  "Run 05_taxonomy_and_seed.sql first (the part_taxonomy column is missing).":"شغّل الملف 05_taxonomy_and_seed.sql أولاً (عمود part_taxonomy مفقود).",
+  "part name":"اسم القطعة","part names":"أسماء القطع","part type":"نوع القطعة","part types":"أنواع القطع","make":"الماركة","makes":"الماركات",
+  "model":"الموديل","models":"الموديلات","year":"السنة","type":"نوع","types":"أنواع","position":"الموضع","direction":"الاتجاه","value":"قيمة","field":"الحقل",
+  "within reach.":"في متناول يدك.","First digit":"الرقم الأول","Second digit":"الرقم الثاني","Third digit":"الرقم الثالث","Fourth digit":"الرقم الرابع",
+  "name":"الاسم","vehicle":"المركبة","location":"الموقع","barcode":"الباركود","Part name *":"اسم القطعة *"
+});
+const T2 = (s) => { const r = tx(s); return r == null ? s : r; };
+const AR_N = { part:["قطعة واحدة","قطعتان","قطع","قطعة"], employee:["موظف واحد","موظفان","موظفين","موظفًا"], type:["نوع واحد","نوعان","أنواع","نوعًا"],
+  model:["موديل واحد","موديلان","موديلات","موديلًا"], make:["ماركة واحدة","ماركتان","ماركات","ماركة"], photo:["صورة واحدة","صورتان","صور","صورة"],
+  value:["قيمة واحدة","قيمتان","قيم","قيمة"], unit:["وحدة واحدة","وحدتان","وحدات","وحدة"], row:["صف واحد","صفان","صفوف","صفًا"] };
+const arCount = (n, k) => { const f = AR_N[k]; return n === 1 ? f[0] : n === 2 ? f[1] : n >= 3 && n <= 10 ? n + " " + f[2] : n + " " + f[3]; };
+const numOf = (x) => parseInt(String(x).replace(/,/g, ""), 10);
+const VERB = { Rename: "إعادة تسمية", Remove: "إزالة", Add: "إضافة" };
+RX.push(
+  [/^(Good morning|Good afternoon|Good evening), (.+)$/, m => T2(m[1]) + "، " + m[2]],
+  [/^([+-])(\d[\d,]*) units?$/, m => m[1] + m[2] + " وحدة"],
+  [/^(\d[\d,]*) (part|employee|type|model|make|photo|value|row)s?$/, m => arCount(numOf(m[1]), m[2])],
+  [/^Showing (\d[\d,]*) of (\d[\d,]*) parts\. Add more words to narrow down\.$/, m => "عرض " + m[1] + " من " + m[2] + " قطعة. أضف كلمات أخرى لتضييق النتائج."],
+  [/^Parts with (\d[\d,]*) or fewer units$/, m => "القطع التي كميتها " + m[1] + " وحدة أو أقل"],
+  [/^Every part has more than (\d[\d,]*) units\.$/, m => "كل قطعة كميتها أكثر من " + m[1] + " وحدة."],
+  [/^Renamed from (.+?) - (.+)$/, m => "أُعيدت تسميته من " + T2(m[1]) + " - " + T2(m[2])],
+  [/^(Dropdown|Text|Number)(?: - depends on (.+?))?( - required)?$/, m => T2(m[1]) + (m[2] ? " - يعتمد على " + T2(m[2]) : "") + (m[3] ? " - مطلوب" : "")],
+  [/^This is a (text|number) field\. It has no list of options\.$/, m => "هذا حقل " + (m[1] === "text" ? "نصي" : "رقمي") + ". ليس له قائمة خيارات."],
+  [/^Add "(.+)" as a new (.+)$/, m => "إضافة \"" + m[1] + "\" كـ" + T2(m[2]) + " جديد"],
+  [/^"(.+)" is already in the list - selected$/, m => "\"" + m[1] + "\" موجود بالفعل في القائمة - تم اختياره"],
+  [/^"(.+)" already exists\.$/, m => "\"" + m[1] + "\" موجود بالفعل."],
+  [/^Added "(.+)" to the (.+) list$/, m => "تمت إضافة \"" + m[1] + "\" إلى قائمة " + T2(m[2])],
+  [/^"(.+)" holds values on (\d[\d,]*) parts?\. It will be hidden from forms and filters, and the stored values are kept\.$/, m => "\"" + m[1] + "\" يحتوي على قيم في " + arCount(numOf(m[2]), "part") + ". سيُخفى من النماذج والمرشحات وتبقى القيم المخزنة."],
+  [/^Delete "(.+)"\? No parts use it\.$/, m => "حذف \"" + m[1] + "\"؟ لا توجد قطع تستخدمه."],
+  [/^Delete "(.+)" for good\? Values already stored on parts stay in the database but will no longer show\.$/, m => "حذف \"" + m[1] + "\" نهائيًا؟ تبقى القيم المخزنة على القطع في قاعدة البيانات لكنها لن تظهر بعد الآن."],
+  [/^Remove "(.+)" and its (.+?)s from the lists\? Parts that already use these values keep them\.$/, m => "إزالة \"" + m[1] + "\" و" + ({ type: "أنواعه", model: "موديلاته" }[m[2]] || T2(m[2])) + " من القوائم؟ القطع التي تستخدم هذه القيم تحتفظ بها."],
+  [/^(Rename|Remove|Add) (part name|part type|type|make|model|year|position|direction|value|field)$/, m => VERB[m[1]] + " " + T2(m[2])],
+  [/^\+ Add (.+)$/, m => "+ إضافة " + T2(m[1])],
+  [/^Type the new (.+)$/, m => "اكتب " + T2(m[1]) + " الجديد"],
+  [/^(.+) \*$/, m => T2(m[1]) + " *"],
+  [/^These options have no Arabic translation yet \((\d+)\)\. Copy the list and send it to Claude to translate\.$/, m => "هذه الخيارات ليس لها ترجمة عربية بعد (" + m[1] + "). انسخ القائمة وأرسلها إلى Claude لترجمتها."],
+  [/^Consumed (\d+) x (.+)$/, m => "تم صرف " + m[1] + " × " + T2(m[2])],
+  [/^Exported (\d[\d,]*) parts(?: with (\d[\d,]*) photos(?: \((\d[\d,]*) photos could not be loaded\))?)?$/, m => "تم تصدير " + m[1] + " قطعة" + (m[2] ? " مع " + m[2] + " صورة" + (m[3] ? " (تعذر تحميل " + m[3] + " صورة)" : "") : "")],
+  [/^Run 08_custom_fields_upgrade\.sql so (.+) can be saved\.$/, m => "شغّل الملف 08_custom_fields_upgrade.sql ليتمكن النظام من حفظ: " + m[1] + "."],
+  [/^Period: (.+)$/, m => "الفترة: " + m[1].split(" | ").map(T2).join(" | ")],
+  [/^(.+) and its photos will be removed\. The history of past additions and consumptions is kept\. This cannot be undone\.$/, m => "سيتم حذف " + m[1] + " وصوره. يبقى سجل الإضافات والصرف السابق. لا يمكن التراجع عن ذلك."],
+  [/^Printed (.+)$/, m => "طُبعت في " + m[1]]
+);
+PRE.push(["Saved, but the quantity was not changed: ","تم الحفظ لكن لم تتغير الكمية: "],["No part found with barcode ","لا توجد قطعة بهذا الباركود "],
+  ["Could not delete the field: ","تعذر حذف الحقل: "],["Could not delete. ","تعذر الحذف. "],["Could not delete: ","تعذر الحذف: "],["Could not save the field: ","تعذر حفظ الحقل: "],
+  ["Could not save: ","تعذر الحفظ: "],["Could not save. Your changes are kept. ","تعذر الحفظ. تغييراتك محفوظة. "],["Could not save. Your entries are kept. ","تعذر الحفظ. بياناتك محفوظة. "]);
+
+
+const FLAGS = {
+  sa: '<span class="flag"><svg viewBox="0 0 30 20" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect width="30" height="20" fill="#006C35"/><g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.4c1.2.7 2 .7 3 0s1.8-.7 2.6 0 1.8.7 2.6 0 1.8-.7 2.6 0 1.8.7 2.6 0 1.8-.7 2.6 0" stroke-width="1.5"/><path d="M8 9V5.6M11 9V5M14 9V5.4M17 9V5M20.5 9V5.6M23 9V6.4" stroke-width="1.1"/><path d="M9.5 3.6c1-.8 2-.8 3 0M15.5 3.7c1-.8 2-.8 3 0" stroke-width=".8"/></g><g fill="#fff"><path d="M5.2 13.9c3.4-.9 9.8-.9 14.6-.3v1.1c-4.8.5-11.2.5-14.6-.8z"/><rect x="19.6" y="12.3" width=".9" height="4.1" rx=".4"/><path d="M20.5 13.8h3.2c.6 0 .6 1.1 0 1.1h-3.2z"/><circle cx="24.3" cy="14.35" r=".7"/></g></svg></span>',
+  gb: '<span class="flag"><svg viewBox="0 0 60 30" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="30" fill="#012169"/><path d="M0 0L60 30M60 0L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0L60 30M60 0L0 30" stroke="#C8102E" stroke-width="2.4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg></span>'
+};
+
+/* Option values (makes, models, part names/types, positions...) are stored in English in the database and only DISPLAYED in Arabic.
+   Add new words here as  "english word": "الكلمة بالعربية"  (lower-case key). A value is translated only if every word in it is known. */
+const GLOSS = {
+"toyota":"تويوتا","nissan":"نيسان","honda":"هوندا","hyundai":"هيونداي","kia":"كيا","ford":"فورد","chevrolet":"شيفروليه","gmc":"جي إم سي","mercedes":"مرسيدس","mercedes-benz":"مرسيدس بنز","benz":"بنز","bmw":"بي إم دبليو","audi":"أودي","lexus":"لكزس","mazda":"مازدا","mitsubishi":"ميتسوبيشي","suzuki":"سوزوكي","isuzu":"إيسوزو","jeep":"جيب","dodge":"دودج","chrysler":"كرايسلر","cadillac":"كاديلاك","volkswagen":"فولكس واجن","land":"لاند","range":"رينج","rover":"روفر","porsche":"بورش","volvo":"فولفو","peugeot":"بيجو","renault":"رينو","subaru":"سوبارو","infiniti":"إنفينيتي","genesis":"جينيسيس","mg":"إم جي","changan":"شانجان","geely":"جيلي","chery":"شيري","haval":"هافال","byd":"بي واي دي","lincoln":"لينكولن","mini":"ميني","fiat":"فيات","daihatsu":"دايهاتسو","tesla":"تيسلا","opel":"أوبل","jaguar":"جاكوار","bentley":"بنتلي","maserati":"مازيراتي","ssangyong":"سانج يونج","great":"جريت","wall":"وول","jac":"جاك","gac":"جي إيه سي","foton":"فوتون","hino":"هينو","iveco":"إيفيكو","man":"مان","scania":"سكانيا",
+"camry":"كامري","corolla":"كورولا","yaris":"يارس","hilux":"هايلكس","prado":"برادو","fortuner":"فورتشنر","innova":"إينوفا","rav4":"راف فور","avalon":"أفالون","cruiser":"كروزر","fj":"إف جي","hiace":"هايس","coaster":"كوستر","rush":"راش","raize":"رايز","sienna":"سيينا","highlander":"هايلاندر","sequoia":"سيكويا","tundra":"تندرا","tacoma":"تاكوما","sunny":"صني","altima":"ألتيما","patrol":"باترول","sentra":"سنترا","maxima":"ماكسيما","pathfinder":"باثفايندر","navara":"نافارا","kicks":"كيكس","x-trail":"إكس تريل","xtrail":"إكس تريل","accord":"أكورد","civic":"سيفيك","cr-v":"سي آر في","crv":"سي آر في","pilot":"بايلوت","elantra":"إلنترا","sonata":"سوناتا","tucson":"توسان","santa":"سانتا","fe":"في","accent":"أكسنت","azera":"أزيرا","creta":"كريتا","palisade":"باليسيد","cerato":"سيراتو","optima":"أوبتيما","sportage":"سبورتاج","sorento":"سورينتو","rio":"ريو","picanto":"بيكانتو","carnival":"كرنفال","mustang":"موستانج","explorer":"إكسبلورر","expedition":"إكسبديشن","edge":"إيدج","escape":"إسكيب","focus":"فوكس","fusion":"فيوجن","taurus":"توروس","f-150":"إف 150","f150":"إف 150","ranger":"رينجر","tahoe":"تاهو","suburban":"سوبربان","silverado":"سيلفرادو","yukon":"يوكن","charger":"تشارجر","challenger":"تشالنجر","durango":"دورانجو","lancer":"لانسر","pajero":"باجيرو","attrage":"أتراج","outlander":"أوتلاندر","cruze":"كروز","malibu":"ماليبو","lumina":"لومينا","captiva":"كابتيفا","optra":"أوبترا","spark":"سبارك","sail":"سيل","equinox":"إكوينوكس","traverse":"ترافيرس","camaro":"كمارو","corvette":"كورفيت","wrangler":"رانجلر","cherokee":"شيروكي","grand":"جراند","compass":"كومباس","patriot":"باتريوت",
+"engine":"محرك","motor":"موتور","gearbox":"قير","transmission":"ناقل الحركة","gear":"ترس","automatic":"أوتوماتيك","manual":"عادي","brake":"فرامل","brakes":"فرامل","pad":"تيل","pads":"تيل","disc":"قرص","disk":"قرص","rotor":"قرص","drum":"طبلة","caliper":"كاليبر","shock":"ممتص صدمات","shocks":"ممتصات صدمات","absorber":"ممتص صدمات","strut":"مساعد","spring":"نابض","springs":"نوابض","radiator":"رديتر","fan":"مروحة","pump":"مضخة","water":"ماء","oil":"زيت","fuel":"وقود","filter":"فلتر","air":"هواء","belt":"سير","chain":"جنزير","timing":"توقيت","alternator":"دينمو","starter":"مارش","battery":"بطارية","plug":"شمعة","plugs":"شمعات","coil":"كويل","sensor":"حساس","bearing":"رولمان","hub":"هب","wheel":"عجلة","rim":"جنط","tire":"إطار","tyre":"إطار","door":"باب","window":"نافذة","mirror":"مرآة","light":"إضاءة","lamp":"مصباح","headlight":"فانوس أمامي","headlamp":"فانوس أمامي","tail":"خلفي","taillight":"فانوس خلفي","fog":"ضباب","bumper":"صدام","hood":"غطاء المحرك","bonnet":"غطاء المحرك","trunk":"صندوق","fender":"رفرف","grille":"شبك","seat":"مقعد","steering":"دركسيون","rack":"جير","axle":"محور","cv":"سي في","joint":"وصلة","ball":"كرة","tie":"ربط","rod":"عمود","control":"تحكم","arm":"ذراع","bushing":"جلبة","bush":"جلبة","clutch":"دبرياج","exhaust":"عادم","muffler":"كاتم صوت","catalytic":"محول حفاز","converter":"محول","turbo":"تيربو","turbocharger":"تيربو","injector":"بخاخ","throttle":"دعاسة","body":"هيكل","front":"أمامي","rear":"خلفي","back":"خلفي","left":"يسار","right":"يمين","upper":"علوي","lower":"سفلي","inner":"داخلي","outer":"خارجي","center":"وسط","centre":"وسط","middle":"وسط","set":"طقم","kit":"عدة","assembly":"مجموعة","cover":"غطاء","gasket":"جوان","seal":"سيل","hose":"خرطوم","pipe":"ماسورة","tank":"خزان","cap":"غطاء","valve":"صمام","piston":"بستم","ring":"شنبر","rings":"شنابر","cylinder":"أسطوانة","head":"رأس","cam":"كامة","camshaft":"عمود الكامات","crankshaft":"عمود المرفق","ac":"مكيف","a/c":"مكيف","compressor":"كمبروسر","condenser":"كوندنسر","evaporator":"مبخر","heater":"مدفأة","wiper":"مساحة","wipers":"مساحات","horn":"بوري","fuse":"فيوز","relay":"ريلاي","wire":"سلك","wiring":"أسلاك","cable":"كيبل","module":"وحدة","ecu":"كمبيوتر المحرك","switch":"مفتاح","handle":"مقبض","lock":"قفل","key":"مفتاح","glass":"زجاج","trim":"زينة","panel":"لوحة","roof":"سقف","floor":"أرضية","mat":"دعاسة","mats":"دعاسات","shaft":"عمود","drive":"دفع","differential":"ديفرنس","pinion":"بنيون","carrier":"حامل","support":"حامل","mount":"قاعدة","mounting":"قاعدة","bracket":"حامل","stabilizer":"استبيليزر","sway":"استبيليزر","link":"وصلة","bar":"عمود","hydraulic":"هيدروليك","power":"باور","vacuum":"فاكيوم","booster":"بوستر","master":"ماستر","wheel":"عجلة","cylinder":"أسطوانة","thermostat":"ثرموستات","housing":"غطاء","sump":"قاعدة","pan":"حوض","dipstick":"مقياس الزيت","manifold":"مانيفولد","intake":"سحب","gauge":"عداد","speedometer":"عداد السرعة","meter":"عداد","camera":"كاميرا","airbag":"وسادة هوائية","belt":"سير","seatbelt":"حزام أمان","antenna":"هوائي","radio":"راديو","speaker":"سماعة","screen":"شاشة","display":"شاشة","cluster":"طبلون","dashboard":"طبلون","console":"كونسول","carpet":"سجاد","roofrack":"حامل سقف","spoiler":"جناح","skirt":"جانب","sill":"عتبة","pillar":"عمود","mud":"طين","flap":"رفرف","guard":"واقي","protector":"واقي","shield":"واقي","splash":"واقي",
+"mechanical":"ميكانيكي","electrical":"كهربائي","electronic":"إلكتروني","exterior":"خارجي","interior":"داخلي","suspension":"تعليق","cooling":"تبريد","accessories":"إكسسوارات","accessory":"إكسسوار","original":"أصلي","genuine":"أصلي","oem":"أصلي","used":"مستعمل","new":"جديد","imported":"مستورد","aftermarket":"تجاري","other":"أخرى","others":"أخرى","unknown":"غير معروف","general":"عام","standard":"قياسي","heavy":"ثقيل","duty":"خدمة","small":"صغير","large":"كبير","big":"كبير","and":"و","with":"مع","for":"لـ","of":"من","sedan":"سيدان","suv":"دفع رباعي","pickup":"بيك أب","truck":"شاحنة","van":"فان","bus":"حافلة","hatchback":"هاتشباك","coupe":"كوبيه","wagon":"ستيشن","petrol":"بنزين","gasoline":"بنزين","diesel":"ديزل","hybrid":"هجين","electric":"كهرباء","lh":"يسار","rh":"يمين","fr":"أمامي","rr":"خلفي","fl":"أمامي يسار","fr":"أمامي يمين"
+};
+Object.assign(GLOSS, { "lug":"جنط", "nut":"صامولة", "nuts":"صواميل", "bolt":"مسمار", "bolts":"مسامير", "stud":"مسمار ثابت", "studs":"مسامير ثابتة", "spacer":"فاصل", "spacers":"فواصل", "stem":"بلبل", "weight":"ثقل", "weights":"أثقال", "balancing":"ترصيص", "tpms":"حساس ضغط الإطار", "hubcap":"غطاء الجنط", "badge":"شعار", "logo":"شعار", "emblem":"شعار", "chrome":"كروم", "painted":"مدهون", "black":"أسود", "silver":"فضي", "gold":"ذهبي", "white":"أبيض", "red":"أحمر", "blue":"أزرق", "grey":"رمادي", "gray":"رمادي", "matte":"مطفي", "polished":"مصقول", "forged":"مطروق", "cast":"مصبوب", "inch":"إنش", "size":"مقاس", "sport":"رياضي", "sports":"رياضي", "racing":"سباق", "offroad":"أوفرود", "spare":"احتياطي", "adapter":"محول", "lock":"قفل", "locking":"قفل", "trim":"زينة", "alloy":"ألمنيوم", "steel":"حديد", "aluminum":"ألمنيوم", "aluminium":"ألمنيوم", "plastic":"بلاستيك", "rubber":"مطاط", "wheels":"جنوط", "rims":"جنوط", "tires":"إطارات", "tyres":"إطارات", "pair":"زوج", "piece":"قطعة", "pcs":"قطعة", "complete":"كامل", "full":"كامل", "half":"نصف", "assy":"مجموعة", "universal":"عام", "pattern":"نمط", "design":"تصميم", "style":"شكل", "wide":"عريض", "narrow":"ضيق", "short":"قصير", "long":"طويل", "high":"عالي", "low":"منخفض", "profile":"بروفايل", "winter":"شتوي", "summer":"صيفي", "season":"موسم" });
+/* ===== Arabic names for part names / part types (stored in English in the database, shown in Arabic) ===== */
+Object.assign(DICT, {
+  /* categories */
+  "A/C and Cooling":"التكييف والتبريد","Brakes":"فرامل","Engine":"محرك","Transmission":"ناقل الحركة","Suspension":"تعليق","Steering":"دركسيون",
+  "Electrical":"كهرباء","Fuel System":"نظام الوقود","Fuel system":"نظام الوقود","Exhaust":"عادم","Body":"هيكل","Body Parts":"قطع الهيكل","Lighting":"إضاءة","Lights":"إضاءة",
+  "Interior":"داخلية","Exterior":"خارجية","Wheels and Tyres":"الجنوط والإطارات","Wheels":"جنوط","Tyres":"إطارات","Cooling":"تبريد","Clutch":"دبرياج",
+  "Battery":"بطارية","Alternator":"دينمو","Starter":"مارش","Sensors":"حساسات","Filters":"فلاتر","Belts and Chains":"السيور والجنازير","Belts & Chains":"السيور والجنازير",
+  "Gaskets and Seals":"الجوانات والسيلات","Gaskets & Seals":"الجوانات والسيلات","Wipers and Washers":"المساحات والغسالة","Wipers & Washers":"المساحات والغسالة",
+  "Safety and Airbags":"السلامة والوسائد الهوائية","Driveshaft and Axles":"أعمدة الدفع والأكسات","Driveshaft & Axles":"أعمدة الدفع والأكسات",
+  "Air Intake":"سحب الهواء","Air intake":"سحب الهواء","Turbo and Intercooler":"التيربو والإنتركولر","Ignition":"الإشعال","Lubrication":"التزييت",
+  "Mirrors":"مرايا","Doors":"أبواب","Glass":"زجاج","Trim":"زينة","Tailgate":"الباب الخلفي (الشنطة)","Boot":"الشنطة","Boot strut":"ذراع الشنطة",
+  "Undermat Storage":"صندوق تخزين تحت الأرضية","Add type +":"إضافة نوع +",
+  /* brakes */
+  "Brake calipers":"فرامل كاليبر","Brake caliper":"فرامل كاليبر","Brake discs":"فرامل قرص","Brake disc":"فرامل قرص","Brake pads":"فرامل تيل","Brake pad":"فرامل تيل",
+  "Brake master cylinder":"فرامل ماستر أسطوانة","Brake servo":"بوستر الفرامل","Handbrake assembly":"مجموعة فرامل اليد","Handbrake cable":"سلك فرامل اليد",
+  "ABS pump":"طرمبة ABS","ABS sensor":"حساس ABS","ABS module":"كمبيوتر ABS","Brake hose":"خرطوم الفرامل","Brake line":"ماسورة الفرامل","Brake drum":"طبلة الفرامل",
+  "Brake shoes":"سفين الفرامل","Brake fluid reservoir":"خزان زيت الفرامل","Brake light switch":"مفتاح ضوء الفرامل","Brake pedal":"دواسة الفرامل","Wear sensor":"حساس تآكل التيل",
+  /* bumpers & body */
+  "Parking sensor":"حساس صف","Parking sensors":"حساسات صف","Tow eye cover":"غطاء خطاف السحب","Tow eye":"خطاف السحب","Front bumper":"صدام أمامي","Rear bumper":"صدام خلفي",
+  "Bumper grille":"شبك الصدام","Bumper bracket":"حامل الصدام","Bumper reinforcement":"دعامة الصدام","Number plate light":"إضاءة اللوحة","Number plate bracket":"حامل اللوحة",
+  "Wing":"رفرف","Wing mirror":"مرآة جانبية","Wing mirror glass":"زجاج المرآة الجانبية","Wing mirror cover":"غطاء المرآة الجانبية","Bonnet":"غطاء المحرك","Bonnet strut":"ذراع غطاء المحرك",
+  "Bonnet catch":"قفل غطاء المحرك","Bonnet cable":"سلك غطاء المحرك","Spoiler":"جناح","Roof rack":"حامل سقف","Roof rail":"سكة السقف","Sunroof":"فتحة سقف","Sunroof motor":"موتور فتحة السقف",
+  "Door handle":"مقبض الباب","Door lock":"قفل الباب","Door mirror":"مرآة الباب","Door seal":"مطاط الباب","Door hinge":"مفصلة الباب","Sill":"عتبة","Mud flap":"واقي الطين","Mudguard":"واقي الطين",
+  "Wheel arch liner":"بطانة قوس العجلة","Wheel arch":"قوس العجلة","Underbody cover":"غطاء أسفل الهيكل","Engine undertray":"غطاء أسفل المحرك","Boot lid":"غطاء الشنطة","Boot lock":"قفل الشنطة",
+  "Tailgate strut":"ذراع الباب الخلفي","Tailgate lock":"قفل الباب الخلفي","Tailgate handle":"مقبض الباب الخلفي","Rear parcel shelf":"رف الشنطة الخلفي","Boot floor":"أرضية الشنطة","Spare wheel cover":"غطاء العجلة الاحتياطي",
+  /* A/C & cooling */
+  "Condenser":"كوندنسر","A/C compressor":"كمبروسر التكييف","A/C condenser":"كوندنسر التكييف","A/C pipe":"ماسورة التكييف","A/C hose":"خرطوم التكييف","A/C switch":"مفتاح التكييف",
+  "A/C control panel":"لوحة تحكم التكييف","A/C evaporator":"مبخر التكييف","A/C dryer":"مجفف التكييف","Receiver drier":"مجفف التكييف","Expansion valve":"صمام التمدد","Expansion tank":"خزان التمدد",
+  "Radiator":"رديتر","Radiator fan":"مروحة الرديتر","Radiator hose":"خرطوم الرديتر","Radiator cap":"غطاء الرديتر","Cooling fan":"مروحة تبريد","Fan motor":"موتور المروحة","Fan shroud":"غلاف المروحة",
+  "Heater matrix":"رديتر التدفئة","Heater blower":"موتور مروحة التدفئة","Heater blower motor":"موتور مروحة التدفئة","Heater hose":"خرطوم التدفئة","Heater valve":"صمام التدفئة","Heater control":"تحكم التدفئة",
+  "Intercooler":"إنتركولر","Intercooler hose":"خرطوم الإنتركولر","Intercooler pipe":"ماسورة الإنتركولر","Water pump":"طرمبة مياه","Thermostat":"ثرموستات","Thermostat housing":"غطاء الثرموستات",
+  "Coolant hose":"خرطوم المياه","Coolant pipe":"ماسورة المياه","Coolant sensor":"حساس حرارة المياه","Oil cooler":"مبرد زيت","Cabin filter":"فلتر المكيف","Pollen filter":"فلتر المكيف",
+  "Air vent":"فتحة تهوية","Vent":"فتحة تهوية",
+  /* alternator / battery / electrical */
+  "Alternator pulley":"بكرة الدينمو","Alternator regulator":"منظم الدينمو","Alternator belt":"سير الدينمو","Alternator bracket":"حامل الدينمو",
+  "Battery terminal":"قطب البطارية","12V battery":"بطارية 12 فولت","Battery tray":"حامل البطارية","Battery cable":"كيبل البطارية","Battery clamp":"مشبك البطارية","Battery cover":"غطاء البطارية",
+  "Battery sensor":"حساس البطارية","Battery hold down":"مثبت البطارية","Battery box":"صندوق البطارية","Starter motor":"موتور المارش","Starter solenoid":"سولينويد المارش","Starter relay":"ريلاي المارش",
+  "Ignition coil":"كويل","Spark plug":"شمعة","Glow plug":"شمعة تسخين","Ignition switch":"سويتش التشغيل","Fuse box":"علبة الفيوزات","Fuse":"فيوز","Relay":"ريلاي","Wiring loom":"ضفيرة الأسلاك",
+  "Wiring harness":"ضفيرة الأسلاك","Horn":"بوري","Control unit":"وحدة تحكم","ECU":"كمبيوتر المحرك","Engine control unit":"كمبيوتر المحرك","Body control module":"كمبيوتر الهيكل",
+  "Crankshaft sensor":"حساس عمود المرفق","Camshaft sensor":"حساس عمود الكامات","Oxygen sensor":"حساس أكسجين","Lambda sensor":"حساس لامدا","MAF sensor":"حساس تدفق الهواء",
+  "MAP sensor":"حساس ضغط المانيفولد","Temperature sensor":"حساس حرارة","Pressure sensor":"حساس ضغط","Speed sensor":"حساس سرعة","Knock sensor":"حساس الدقّ","Throttle sensor":"حساس دعاسة البنزين",
+  "Light switch":"مفتاح الإضاءة","Indicator switch":"مفتاح الإشارات","Wiper switch":"مفتاح المساحات","Window switch":"مفتاح الزجاج","Window motor":"موتور الزجاج","Window regulator":"رافع الزجاج",
+  /* lighting */
+  "Headlight":"فانوس أمامي","Headlamp":"فانوس أمامي","Tail light":"فانوس خلفي","Rear light":"فانوس خلفي","Fog light":"كشاف ضباب","Indicator":"إشارة","Indicator lamp":"إشارة",
+  "Side repeater":"إشارة جانبية","Bulb":"لمبة","Bulb holder":"قاعدة اللمبة","Daytime running light":"إضاءة نهارية","Reversing light":"ضوء الرجوع","Brake light":"ضوء الفرامل",
+  "Interior light":"إضاءة داخلية","Number plate lamp":"إضاءة اللوحة",
+  /* engine */
+  "Engine mount":"قاعدة المحرك","Gearbox mount":"قاعدة القير","Cylinder head":"رأس المحرك","Cylinder head gasket":"جوان رأس المحرك","Head gasket":"جوان رأس المحرك","Rocker cover":"غطاء الصبابات",
+  "Rocker cover gasket":"جوان غطاء الصبابات","Timing belt":"سير التوقيت","Timing chain":"جنزير التوقيت","Timing belt kit":"عدة سير التوقيت","Timing cover":"غطاء التوقيت","Tensioner":"شداد","Belt tensioner":"شداد السير",
+  "Drive belt":"سير الدينمو","Serpentine belt":"سير الدينمو","Idler pulley":"بكرة مساعدة","Crankshaft pulley":"بكرة عمود المرفق","Piston":"بستم","Piston rings":"شنابر","Connecting rod":"ذراع التوصيل",
+  "Crankshaft":"عمود المرفق","Camshaft":"عمود الكامات","Valve":"صمام","Valve cover":"غطاء الصمامات","Oil pump":"طرمبة زيت","Oil pan":"حوض الزيت","Sump":"حوض الزيت","Oil filter":"فلتر زيت",
+  "Oil filter housing":"غطاء فلتر الزيت","Oil dipstick":"مقياس الزيت","Dipstick":"مقياس الزيت","Oil cap":"غطاء الزيت","Oil pressure switch":"حساس ضغط الزيت","Engine block":"بلوك المحرك",
+  "Turbo":"تيربو","Turbocharger":"تيربو","Turbo hose":"خرطوم التيربو","Turbo pipe":"ماسورة التيربو","EGR valve":"صمام EGR","EGR cooler":"مبرد EGR","Intake manifold":"مانيفولد السحب",
+  "Exhaust manifold":"مانيفولد العادم","Throttle body":"بدّي دعاسة البنزين","Air filter":"فلتر هواء","Air filter box":"علبة فلتر الهواء","Air intake pipe":"ماسورة سحب الهواء","Air flow meter":"حساس تدفق الهواء",
+  "Engine cover":"غطاء المحرك الداخلي","Engine oil":"زيت المحرك","Vacuum pump":"طرمبة فاكيوم","Breather hose":"خرطوم التنفيس","Breather":"تنفيس",
+  /* fuel */
+  "Fuel pump":"طرمبة بنزين","Fuel filter":"فلتر بنزين","Fuel tank":"خزان وقود","Fuel tank cap":"غطاء خزان الوقود","Fuel injector":"بخاخ","Fuel rail":"سكة البخاخات","Fuel line":"ماسورة الوقود",
+  "Fuel pressure regulator":"منظم ضغط الوقود","Diesel pump":"طرمبة ديزل","Injector":"بخاخ","Injector seal":"سيل البخاخ","High pressure pump":"طرمبة ضغط عالي",
+  /* exhaust */
+  "Catalytic converter":"محول حفاز","DPF":"فلتر الجسيمات DPF","Exhaust pipe":"ماسورة العادم","Exhaust silencer":"كاتم صوت","Silencer":"كاتم صوت","Exhaust gasket":"جوان العادم","Exhaust hanger":"حامل العادم",
+  "Exhaust flex pipe":"وصلة العادم المرنة","Tailpipe":"نهاية العادم","Exhaust tip":"رأس العادم","Heat shield":"واقي حرارة",
+  /* suspension / steering / axle */
+  "Shock absorber":"ممتص صدمات","Coil spring":"نابض","Leaf spring":"مقص","Top mount":"قاعدة علوية","Strut mount":"قاعدة المساعد","Anti roll bar":"استبيليزر","Anti-roll bar":"استبيليزر",
+  "Stabiliser link":"وصلة الاستبيليزر","Stabilizer link":"وصلة الاستبيليزر","Drop link":"وصلة الاستبيليزر","Track rod end":"رأس الدركسيون","Tie rod end":"رأس الدركسيون","Tie rod":"ذراع الدركسيون",
+  "Ball joint":"كرة مقص","Control arm":"مقص","Wishbone":"مقص","Trailing arm":"ذراع خلفي","Bush":"جلبة","Wheel bearing":"رولمان عجلة","Wheel hub":"هب العجلة","Hub bearing":"رولمان هب",
+  "Steering rack":"جير الدركسيون","Steering pump":"طرمبة الدركسيون","Power steering pump":"طرمبة الدركسيون","Steering wheel":"طارة (دركسيون)","Steering column":"عمود الدركسيون",
+  "Steering knuckle":"سبيندل","Knuckle":"سبيندل","Subframe":"شاسيه فرعي","Driveshaft":"عمود الدفع","Drive shaft":"عمود الدفع","CV joint":"سي في جوينت","CV boot":"كاوتش السي في",
+  "Prop shaft":"عمود كردان","Half shaft":"عمود الأكس","Axle":"أكس","Differential":"ديفرنس",
+  /* transmission / clutch */
+  "Gearbox":"قير","Gear lever":"عصا القير","Gear knob":"كرة القير","Gear selector":"محدد القير","Clutch kit":"طقم دبرياج","Clutch disc":"صحن دبرياج","Clutch plate":"صحن دبرياج",
+  "Clutch cover":"غطاء دبرياج","Pressure plate":"غطاء دبرياج","Clutch pedal":"دواسة الدبرياج","Clutch cable":"سلك دبرياج","Clutch master cylinder":"طرمبة دبرياج","Clutch slave cylinder":"طرمبة دبرياج سفلية",
+  "Flywheel":"طارة المحرك","Dual mass flywheel":"طارة المحرك المزدوجة","Release bearing":"رولمان الدبرياج","Gearbox oil":"زيت القير","Transmission oil cooler":"مبرد زيت القير",
+  /* interior */
+  "Seat":"كرسي","Seat belt":"حزام الأمان","Seatbelt":"حزام الأمان","Seat cover":"غطاء الكرسي","Headrest":"مسند الرأس","Armrest":"مسند اليد","Dashboard":"تابلوه","Dash panel":"تابلوه",
+  "Instrument cluster":"طبلون العدادات","Speedometer":"عداد السرعة","Glove box":"درج التابلوه","Centre console":"كونسول وسط","Center console":"كونسول وسط","Sun visor":"واقي الشمس","Visor":"واقي الشمس",
+  "Carpet":"سجاد","Floor mat":"دعاسة أرضية","Floor mats":"دعاسات أرضية","Rear view mirror":"مرآة داخلية","Interior mirror":"مرآة داخلية","Airbag":"وسادة هوائية","Airbag module":"كمبيوتر الوسائد الهوائية",
+  "Radio":"راديو","Speaker":"سماعة","Screen":"شاشة","Sat nav":"ملاحة","Aerial":"هوائي","Antenna":"هوائي","Cigarette lighter":"ولاعة","Cup holder":"حامل أكواب",
+  /* wipers / glass / misc */
+  "Wiper blade":"مساحة","Wiper arm":"ذراع المساحة","Wiper motor":"موتور المساحات","Wiper linkage":"وصلات المساحات","Washer pump":"طرمبة الغسالة","Washer bottle":"خزان الغسالة",
+  "Washer jet":"بخاخ الغسالة","Windscreen":"زجاج أمامي","Windshield":"زجاج أمامي","Rear window":"زجاج خلفي","Door glass":"زجاج الباب","Quarter glass":"زجاج جانبي",
+  "Badge":"شعار","Emblem":"شعار","Logo":"شعار","Key":"مفتاح","Key fob":"ريموت المفتاح","Remote":"ريموت","Central locking":"القفل المركزي","Central locking motor":"موتور القفل المركزي",
+  "Jack":"عفريتة","Wheel nut":"صامولة العجلة","Wheel bolt":"مسمار العجلة","Wheel trim":"غطاء الجنط","Alloy wheel":"جنط ألمنيوم","Steel wheel":"جنط حديد","Centre cap":"غطاء وسط الجنط","Spare wheel":"عجلة احتياطي",
+  "TPMS sensor":"حساس ضغط الإطار","Tyre":"إطار","Tire":"إطار"
+});
+Object.assign(GLOSS, {
+  "a/c":"التكييف","and":"و","storage":"تخزين","undermat":"تحت الأرضية","tailgate":"الباب الخلفي","boot":"الشنطة","strut":"ذراع","struts":"أذرع","servo":"بوستر","handbrake":"فرامل اليد",
+  "abs":"ABS","matrix":"رديتر التدفئة","blower":"مروحة","intercooler":"إنتركولر","expansion":"تمدد","eye":"عين","tow":"سحب","parking":"صف","terminal":"قطب","terminals":"أقطاب","tray":"حامل",
+  "12v":"12 فولت","24v":"24 فولت","regulator":"منظم","pulley":"بكرة","wing":"رفرف","tensioner":"شداد","idler":"مساعدة","silencer":"كاتم صوت","aerial":"هوائي","windscreen":"زجاج أمامي","windshield":"زجاج أمامي",
+  "bulb":"لمبة","indicator":"إشارة","repeater":"إشارة جانبية","reversing":"رجوع","reverse":"رجوع","glow":"تسخين","spark":"شرارة","ignition":"إشعال","coolant":"مياه التبريد","cooler":"مبرد","cooling":"تبريد",
+  "dryer":"مجفف","drier":"مجفف","receiver":"مستقبل","pollen":"غبار","cabin":"مقصورة","vent":"فتحة تهوية","vents":"فتحات تهوية","shroud":"غلاف","oxygen":"أكسجين","lambda":"لامدا","knock":"دقّ","maf":"تدفق الهواء",
+  "map":"ضغط المانيفولد","egr":"EGR","dpf":"DPF","fap":"DPF","manifold":"مانيفولد","throttle":"دعاسة البنزين","body":"هيكل","dipstick":"مقياس الزيت","breather":"تنفيس","rocker":"صبابات","rail":"سكة",
+  "regulator":"منظم","solenoid":"سولينويد","harness":"ضفيرة","loom":"ضفيرة","fob":"ريموت","remote":"ريموت","visor":"واقي الشمس","glovebox":"درج التابلوه","cigarette":"سجائر","lighter":"ولاعة","cup":"كوب","holder":"حامل",
+  "knuckle":"سبيندل","wishbone":"مقص","subframe":"شاسيه فرعي","flywheel":"طارة المحرك","dual":"مزدوج","mass":"كتلة","release":"تحرير","slave":"سفلية","selector":"محدد","knob":"كرة","lever":"عصا","jack":"عفريتة",
+  "leaf":"ورقة","coil":"نابض","top":"علوي","drop":"إسقاط","trailing":"خلفي","prop":"كردان","half":"نصف","reinforcement":"دعامة","absorber":"ممتص","underbody":"أسفل الهيكل","undertray":"غطاء أسفل","liner":"بطانة","arch":"قوس",
+  "mudguard":"واقي الطين","sunroof":"فتحة سقف","tailpipe":"نهاية العادم","flex":"مرن","hanger":"حامل","tip":"رأس","gearbox":"قير","gear":"قير","fluid":"زيت","reservoir":"خزان","pedal":"دواسة","shoes":"سفين","wear":"تآكل",
+  "washer":"غسالة","jet":"بخاخ","bottle":"خزان","linkage":"وصلات","quarter":"جانبي","sat":"ملاحة","nav":"ملاحة","carpet":"سجاد","petrol":"بنزين","diesel":"ديزل","unit":"وحدة","clamp":"مشبك","hold":"تثبيت","down":"تثبيت","box":"علبة",
+  "reg":"لوحة","number":"لوحة","plate":"صحن","plates":"صحون","pressure":"ضغط","temperature":"حرارة","temp":"حرارة","speed":"سرعة","level":"مستوى","flow":"تدفق","oil":"زيت"
+});
+
+function trOpt(s) {
+  const parts = s.split(/([\s\/\-,()+&_.]+)/); let hit = 0;
+  const out = parts.map((p, i) => {
+    if (i % 2 === 1 || !p) return p;
+    if (/^\d+$/.test(p)) return p;
+    const k = p.toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(GLOSS, k)) { hit++; return GLOSS[k]; }
+    hit = -1e6; return p;
+  });
+  return hit > 0 ? out.join("").replace(/\s*\/\s*/g, " / ") : null;
+}
+const srchTxt = (v) => (String(v) + " " + (L.lang === "ar" ? (tx(String(v)) || "") : "")).toLowerCase();
+function untranslatedOptions() {
+  const set = new Set(), d = Opts.data || {};
+  const add = (v) => { if (typeof v === "string") { const t = v.trim(); if (t && t.length <= 80 && /[A-Za-z]/.test(t) && tx(t) == null) set.add(t); } };
+  const walk = (x, deep) => { if (x == null || deep > 5) return; if (typeof x === "string") add(x); else if (Array.isArray(x)) x.forEach((y) => walk(y, deep + 1)); else if (typeof x === "object") Object.keys(x).forEach((k) => { add(k); walk(x[k], deep + 1); }); };
+  ["vehicle", "model", "category", "position", "direction", "taxonomy"].forEach((k) => walk(d[k], 0));
+  (Opts.defs || []).forEach((f) => walk(f.options || f.values, 0));
+  if (Opts.facets) ["names", "types", "makes"].forEach((k) => Opts.facets[k] && Opts.facets[k].forEach(add));
+  return Array.from(set).sort();
+}
+function openUntranslated() {
+  const list = untranslatedOptions();
+  const d = openDialog({ title: "Untranslated options",
+    html: '<p class="muted" style="margin:0 0 12px;font-size:14px;line-height:20px">' + (list.length ? "These options have no Arabic translation yet (" + list.length + "). Copy the list and send it to Claude to translate." : "All options are translated.") + '</p><textarea class="field" id="utTxt" readonly style="min-height:200px;padding:12px;direction:ltr;text-align:left">' + esc(list.join("\n")) + "</textarea>",
+    actions: '<div class="da"><button class="btn" data-close>Close</button>' + (list.length ? '<button class="btn primary" id="utCopy">Copy list</button>' : "") + "</div>" });
+  const c = d.querySelector("#utCopy");
+  if (c) c.addEventListener("click", () => { const t = d.querySelector("#utTxt"); t.select(); try { navigator.clipboard.writeText(t.value); } catch (e) { document.execCommand("copy"); } toast("Copied"); });
+}
+
+/* ===================================================================================================
+   PARTS CATALOG (built-in list shown in the "Add part" form and filters, in English and Arabic).
+   Each entry:  { en: "Main part", ar: "الاسم بالعربي", parts: [ ["Sub-part", "الاسم بالعربي"], ... ] }
+   Add new entries between the START and END lines only. Nothing else in the file needs to change.
+   =================================================================================================== */
+/* === PARTS CATALOG START === */
+const PARTS_CATALOG = [
+  { en: "Door", ar: "باب", parts: [
+    ["Door Glass", "زجاج الباب"], ["Door Shell", "هيكل الباب"], ["Door Hinge", "مفصلة الباب"],
+    ["Door Lock", "قفل الباب"], ["Door Lock Actuator", "موتور قفل الباب"], ["Window Regulator", "رافع الزجاج"],
+    ["Window Regulator Motor", "موتور رفع الزجاج"], ["Window Switch", "مفتاح الزجاج"], ["Door Control Module", "وحدة تحكم الباب"],
+    ["Inner Handle", "مقبض داخلي"], ["Outer Handle", "مقبض خارجي"], ["Door Speaker", "سماعة الباب"],
+    ["Door Weatherstrip", "مطاط الباب"], ["Door Check Strap", "محدد فتح الباب"], ["Door Trim Panel", "تابلوه الباب"],
+    ["Door Sill Plate", "عتبة الباب"], ["Door Mirror Switch", "مفتاح المرايا"]
+  ] },
+  { en: "Bumper", ar: "صدام", parts: [
+    ["Bumper Cover", "غطاء الصدام"], ["Bumper Reinforcement", "دعامة الصدام"], ["Bumper Absorber", "ماص صدمات الصدام"],
+    ["Parking Sensor", "حساس صدام"], ["Bumper Light", "إضاءة الصدام"], ["Bumper Grille", "شبك الصدام"],
+    ["Bumper Logo", "شعار الصدام"], ["Tow Hook Cover", "غطاء خطاف السحب"], ["Bumper Bracket", "حامل الصدام"],
+    ["Fog Light Cover", "غطاء الضباب"]
+  ] },
+  { en: "Seat", ar: "كرسي", parts: [
+    ["Seat Frame", "هيكل الكرسي"], ["Seat Cover Fabric", "قماش الكرسي"], ["Leather Seat Cover", "جلد الكرسي"],
+    ["Seat Cushion Foam", "مدكى الكرسي"], ["Seat Armrest", "مسند الكرسي"], ["Seat Headrest", "مسند الرأس"],
+    ["Seat Adjustment Motor", "موتور تحكم الكرسي"], ["Seat Control Switch", "مفتاح تحكم الكرسي"], ["Seat Heater", "سخان الكرسي"],
+    ["Seat Rail", "سكة الكرسي"], ["Seat Belt Buckle", "قفل حزام الأمان"], ["Seat Airbag", "وسادة الكرسي الهوائية"]
+  ] },
+  { en: "Hood", ar: "غطاء المحرك", parts: [
+    ["Hood Panel", "غطاء المحرك الخارجي"], ["Hood Hinge", "مفصلة غطاء المحرك"], ["Hood Latch", "قفل غطاء المحرك"],
+    ["Hood Cable", "سلك فتح غطاء المحرك"], ["Hood Shock", "ذراع غطاء المحرك"], ["Hood Insulator", "عازل غطاء المحرك"],
+    ["Hood Emblem", "شعار غطاء المحرك"]
+  ] },
+  { en: "Trunk Lid", ar: "غطاء الشنطة", parts: [
+    ["Trunk Panel", "غطاء الشنطة الخارجي"], ["Trunk Lock", "قفل الشنطة"], ["Trunk Lock Actuator", "موتور قفل الشنطة"],
+    ["Trunk Hinge", "مفصلة الشنطة"], ["Trunk Shock", "ذراع الشنطة"], ["Trunk Handle", "مقبض الشنطة"],
+    ["Trunk Weatherstrip", "مطاط الشنطة"], ["Trunk Spoiler", "جناح الشنطة"]
+  ] },
+  { en: "Fender", ar: "رفرف", parts: [
+    ["Fender Panel", "رفرف خارجي"], ["Fender Liner", "بطانة الرفرف"], ["Fender Flare", "توسعة الرفرف"],
+    ["Fender Bracket", "حامل الرفرف"], ["Fender Molding", "زينة الرفرف"]
+  ] },
+  { en: "Grille", ar: "شبك", parts: [
+    ["Radiator Grille", "شبك الرديتر"], ["Grille Frame", "إطار الشبك"], ["Grille Logo", "شعار الشبك"],
+    ["Lower Grille", "شبك سفلي"], ["Grille Insert", "حشوة الشبك"]
+  ] },
+  { en: "Side Mirror", ar: "مرآة جانبية", parts: [
+    ["Mirror Glass", "زجاج المرآة"], ["Mirror Cover", "غطاء المرآة"], ["Mirror Motor", "موتور المرآة"],
+    ["Mirror Turn Signal", "إشارة المرآة"], ["Mirror Camera", "كاميرا المرآة"], ["Mirror Folding Motor", "موتور طي المرآة"],
+    ["Mirror Housing", "هيكل المرآة"], ["Rear View Mirror", "مرآة داخلية"]
+  ] },
+  { en: "Headlight", ar: "فانوس أمامي", parts: [
+    ["Headlight Assembly", "فانوس أمامي كامل"], ["Headlight Lens", "زجاج الفانوس"], ["Headlight Bulb", "لمبة الفانوس"],
+    ["Xenon Ballast", "بلاست زنون"], ["LED Driver", "دارة LED"], ["Headlight Adjust Motor", "موتور ضبط الفانوس"],
+    ["Headlight Bracket", "حامل الفانوس"], ["Headlight Washer", "بخاخ الفانوس"]
+  ] },
+  { en: "Tail Light", ar: "فانوس خلفي", parts: [
+    ["Tail Light Assembly", "فانوس خلفي كامل"], ["Tail Light Lens", "زجاج الفانوس الخلفي"], ["Tail Light Bulb", "لمبة الفانوس الخلفي"],
+    ["Brake Light", "ضوء الفرامل"], ["Third Brake Light", "ضوء الفرامل الثالث"], ["Reverse Light", "ضوء الرجوع"],
+    ["Tail Light Socket", "سوكت الفانوس"]
+  ] },
+  { en: "Fog Light", ar: "ضباب", parts: [
+    ["Fog Light Assembly", "ضباب كامل"], ["Fog Light Bulb", "لمبة الضباب"], ["Fog Light Switch", "مفتاح الضباب"],
+    ["Fog Light Bezel", "إطار الضباب"]
+  ] },
+  { en: "Dashboard", ar: "طبلون", parts: [
+    ["Dashboard Panel", "طبلون كامل"], ["Dashboard Vent", "فتحة تكييف الطبلون"], ["Glove Box", "درج الطبلون"],
+    ["Instrument Cluster", "عداد السرعة"], ["Dashboard Trim", "زينة الطبلون"], ["Dashboard Airbag", "وسادة الطبلون الهوائية"],
+    ["Infotainment Screen", "شاشة"], ["Hazard Switch", "مفتاح الطوارئ"], ["Radio Unit", "راديو"],
+    ["Clock Spring", "سلك الدركسيون"]
+  ] },
+  { en: "Steering Wheel", ar: "دركسيون", parts: [
+    ["Steering Wheel Cover", "غطاء الدركسيون"], ["Steering Airbag", "وسادة الدركسيون الهوائية"], ["Steering Switch", "أزرار الدركسيون"],
+    ["Steering Column", "عمود الدركسيون"], ["Steering Lock", "قفل الدركسيون"], ["Horn Pad", "غطاء البوري"]
+  ] },
+  { en: "Engine Assembly", ar: "محرك", parts: [
+    ["Engine Complete", "محرك كامل"], ["Short Block", "نص محرك"], ["Cylinder Head", "راس المحرك"],
+    ["Cylinder Block", "بلوك المحرك"], ["Piston", "بستم"], ["Piston Rings", "شنابر"],
+    ["Connecting Rod", "ذراع البستم"], ["Crankshaft", "عمود المرفق"], ["Camshaft", "عمود الكامات"],
+    ["Valve", "صمام"], ["Valve Cover", "غطاء الصمامات"], ["Head Gasket", "جوان راس"],
+    ["Timing Chain", "جنزير الصرف"], ["Timing Belt", "سير الصرف"], ["Oil Pan", "حوض الزيت"],
+    ["Oil Pump", "مضخة الزيت"], ["Engine Mount", "قاعدة المحرك"], ["Flywheel", "فولاني"],
+    ["Turbocharger", "تيربو"], ["Intake Manifold", "مانيفولد السحب"], ["Throttle Body", "دعاسة البنزين"],
+    ["Fuel Injector", "بخاخ بنزين"], ["Spark Plug", "شمعة"], ["Ignition Coil", "كويل"]
+  ] },
+  { en: "Transmission", ar: "قير", parts: [
+    ["Automatic Transmission", "قير أوتوماتيك"], ["Manual Transmission", "قير عادي"], ["Clutch Disc", "دبرياج"],
+    ["Clutch Pressure Plate", "صحن الدبرياج"], ["Torque Converter", "تورك كونفرتر"], ["Valve Body", "فالف بدي القير"],
+    ["Transmission Mount", "قاعدة القير"], ["Transmission Cooler", "رديتر القير"], ["Shift Cable", "سلك القير"],
+    ["Gear Shifter", "يد القير"], ["Transfer Case", "ديفرنس توزيع"]
+  ] },
+  { en: "Drivetrain", ar: "نقل الحركة", parts: [
+    ["Driveshaft", "عمود كردان"], ["CV Axle", "عمود دوران"], ["CV Joint", "رأس عمود الدوران"],
+    ["Differential", "ديفرنس"], ["Axle Shaft", "عمود الدفع"], ["Wheel Hub", "هب العجلة"],
+    ["Wheel Bearing", "رولمان العجلة"]
+  ] },
+  { en: "Radiator", ar: "رديتر", parts: [
+    ["Radiator Core", "رديتر كامل"], ["Radiator Cap", "غطاء الرديتر"], ["Radiator Hose", "خرطوم الرديتر"],
+    ["Cooling Fan", "مروحة التبريد"], ["Fan Motor", "موتور المروحة"], ["Fan Shroud", "غطاء المروحة"],
+    ["Water Pump", "مضخة ماء"], ["Thermostat", "ثرموستات"], ["Coolant Reservoir", "خزان ماء الرديتر"],
+    ["Oil Cooler", "رديتر الزيت"]
+  ] },
+  { en: "Air Conditioning", ar: "مكيف", parts: [
+    ["A/C Compressor", "كمبروسر المكيف"], ["A/C Condenser", "كوندنسر"], ["A/C Evaporator", "مبخر"],
+    ["Blower Motor", "موتور المكيف"], ["A/C Control Panel", "لوحة تحكم المكيف"], ["A/C Hose", "خرطوم المكيف"],
+    ["Heater Core", "رديتر التدفئة"], ["Cabin Filter", "فلتر المكيف"], ["Expansion Valve", "صمام التمدد"],
+    ["A/C Dryer", "مجفف المكيف"]
+  ] },
+  { en: "Exhaust", ar: "عادم", parts: [
+    ["Exhaust Manifold", "مانيفولد العادم"], ["Catalytic Converter", "كاتاليزر"], ["Muffler", "كاتم صوت"],
+    ["Exhaust Pipe", "ماسورة العادم"], ["Oxygen Sensor", "حساس أكسجين"], ["Exhaust Flex Pipe", "مرن العادم"],
+    ["Exhaust Hanger", "حامل العادم"], ["Exhaust Tip", "نهاية العادم"]
+  ] },
+  { en: "Electrical", ar: "كهرباء", parts: [
+    ["Alternator", "دينمو"], ["Starter Motor", "مارش"], ["Battery", "بطارية"],
+    ["Wiring Harness", "ضفيرة أسلاك"], ["Fuse Box", "علبة فيوزات"], ["Relay", "ريلاي"],
+    ["Ignition Switch", "سويتش تشغيل"], ["Engine Control Module", "كمبيوتر المحرك"], ["Body Control Module", "كمبيوتر البودي"],
+    ["Horn", "بوري"], ["Key Fob", "ريموت"], ["Wiper Motor", "موتور المساحات"],
+    ["Light Switch", "مفتاح الأنوار"]
+  ] },
+  { en: "Sensors", ar: "حساسات", parts: [
+    ["Crankshaft Sensor", "حساس عمود المرفق"], ["Camshaft Sensor", "حساس الكامات"], ["Knock Sensor", "حساس الطرق"],
+    ["ABS Sensor", "حساس ABS"], ["MAF Sensor", "حساس الهواء"], ["MAP Sensor", "حساس الضغط"],
+    ["Temperature Sensor", "حساس الحرارة"], ["Oil Pressure Sensor", "حساس ضغط الزيت"], ["Throttle Position Sensor", "حساس الدعاسة"],
+    ["Rain Sensor", "حساس المطر"], ["Radar Sensor", "حساس الرادار"]
+  ] },
+  { en: "Suspension", ar: "تعليق", parts: [
+    ["Shock Absorber", "ممتص صدمات"], ["Strut", "مساعد"], ["Coil Spring", "نابض"],
+    ["Leaf Spring", "ريش"], ["Control Arm", "مقص"], ["Ball Joint", "كرة مقص"],
+    ["Tie Rod End", "رأس دركسيون"], ["Stabilizer Bar", "استبيليزر"], ["Stabilizer Link", "وصلة استبيليزر"],
+    ["Bushing", "جلبة"], ["Strut Mount", "قاعدة المساعد"], ["Air Suspension Bag", "كيس هواء"]
+  ] },
+  { en: "Steering System", ar: "نظام التوجيه", parts: [
+    ["Steering Rack", "جير دركسيون"], ["Power Steering Pump", "مضخة الباور"], ["Steering Gearbox", "قير الدركسيون"],
+    ["Power Steering Hose", "خرطوم الباور"], ["Power Steering Reservoir", "خزان زيت الباور"], ["Steering Knuckle", "مفصل الدركسيون"]
+  ] },
+  { en: "Brakes", ar: "فرامل", parts: [
+    ["Brake Pads", "تيل فرامل"], ["Brake Disc", "قرص فرامل"], ["Brake Drum", "طبلة فرامل"],
+    ["Brake Shoes", "سفين فرامل"], ["Brake Caliper", "كاليبر فرامل"], ["Brake Master Cylinder", "طرمبة فرامل"],
+    ["Brake Booster", "بوستر فرامل"], ["Brake Hose", "خرطوم فرامل"], ["ABS Module", "كمبيوتر ABS"],
+    ["Handbrake Cable", "سلك فرامل اليد"], ["Parking Brake Motor", "موتور فرامل اليد"]
+  ] },
+  { en: "Filters", ar: "فلاتر", parts: [
+    ["Oil Filter", "فلتر زيت"], ["Air Filter", "فلتر هواء"], ["Fuel Filter", "فلتر بنزين"],
+    ["Cabin Air Filter", "فلتر مكيف"], ["Transmission Filter", "فلتر قير"]
+  ] },
+  { en: "Fuel System", ar: "نظام الوقود", parts: [
+    ["Fuel Pump", "طرمبة بنزين"], ["Fuel Tank", "خزان بنزين"], ["Fuel Tank Cap", "غطاء الخزان"],
+    ["Fuel Rail", "سكة البخاخات"], ["Fuel Pressure Regulator", "منظم ضغط البنزين"], ["Fuel Level Sensor", "عوامة البنزين"]
+  ] },
+  { en: "Glass", ar: "زجاج", parts: [
+    ["Windshield", "زجاج أمامي"], ["Rear Windshield", "زجاج خلفي"], ["Quarter Glass", "زجاج جانبي صغير"],
+    ["Sunroof Glass", "زجاج فتحة السقف"], ["Sunroof Motor", "موتور فتحة السقف"]
+  ] },
+  { en: "Wheels and Tires", ar: "جنوط وإطارات", parts: [
+    ["Alloy Wheel", "جنط ألمنيوم"], ["Steel Wheel", "جنط حديد"], ["Tire", "إطار"],
+    ["Wheel Cover", "غطاء الجنط"], ["Wheel Nut", "صامولة الجنط"], ["Spare Wheel", "إطار احتياطي"],
+    ["Tire Pressure Sensor", "حساس ضغط الإطار"]
+  ] },
+  { en: "Interior Trim", ar: "زينة داخلية", parts: [
+    ["Floor Mat", "دعاسة أرضية"], ["Carpet", "سجاد"], ["Headliner", "سقف داخلي"],
+    ["Sun Visor", "مظلة"], ["Center Console", "كونسول"], ["Gear Knob", "رأس القير"],
+    ["Pedal Set", "طقم دعاسات"], ["Seat Belt", "حزام أمان"], ["Pillar Trim", "زينة العمود"]
+  ] },
+  { en: "Wipers", ar: "مساحات", parts: [
+    ["Wiper Blade", "ريشة المساحة"], ["Wiper Arm", "ذراع المساحة"], ["Wiper Linkage", "وصلة المساحات"],
+    ["Washer Pump", "طرمبة الماء"], ["Washer Reservoir", "خزان ماء المساحات"], ["Washer Nozzle", "بخاخ الزجاج"]
+  ] },
+  { en: "Body Panels", ar: "هيكل السيارة", parts: [
+    ["Roof Panel", "سقف"], ["Quarter Panel", "ربع"], ["Rocker Panel", "عتبة جانبية"],
+    ["Front Panel", "ردياتر سبورت"], ["Pillar", "عمود"], ["Floor Pan", "أرضية"],
+    ["Spoiler", "جناح"], ["Mud Guard", "واقي طين"], ["Side Skirt", "جانب سفلي"],
+    ["Emblem", "شعار"]
+  ] }
+  ,{ en: "Wheel", ar: "جنط", parts: [
+    ["Alloy Wheel", "جنط ألمنيوم"], ["Steel Wheel", "جنط حديد"], ["Forged Wheel", "جنط مطروق"], ["Wheel Center Cap", "غطاء وسط الجنط"],
+    ["Wheel Hub Cap", "غطاء الجنط"], ["Wheel Lug Nut", "صامولة الجنط"], ["Wheel Lug Bolt", "مسمار الجنط"], ["Wheel Stud", "مسمار ثابت للجنط"],
+    ["Wheel Spacer", "فاصل جنط"], ["Wheel Lock Set", "قفل الجنط"], ["Wheel Trim Ring", "إطار زينة الجنط"], ["Wheel Balancing Weight", "ثقل ترصيص الجنط"],
+    ["Tire Valve Stem", "بلبل الإطار"], ["Spare Wheel Cover", "غطاء الإطار الاحتياطي"]
+  ] }
+];
+/* === PARTS CATALOG END === */
+const CAT_TAX = {};
+PARTS_CATALOG.forEach((c) => {
+  CAT_TAX[c.en] = c.parts.map((p) => p[0]);
+  if (!(c.en in DICT)) DICT[c.en] = c.ar;
+  c.parts.forEach((p) => { if (!(p[0] in DICT)) DICT[p[0]] = p[1]; });
+});
+const TO = new WeakMap(), ATTRS = ["placeholder", "aria-label", "title", "alt"];
+function tx(s, isAttr) {
+  if (Object.prototype.hasOwnProperty.call(DICT, s)) return DICT[s];
+  for (const r of RX) { const m = s.match(r[0]); if (m) return r[1](m); }
+  for (const p of PRE) if (s.startsWith(p[0])) return p[1] + s.slice(p[0].length);
+  if (isAttr) for (const p of PREA) if (s.startsWith(p[0])) { const rest = s.slice(p[0].length), r = tx(rest); return p[1] + (r == null ? rest : r); }
+  for (const sep of [" | ", " - "]) if (s.indexOf(sep) > 0) {          /* composed text: translate each piece, keep the rest as is */
+    const parts = s.split(sep), tr = parts.map((x) => tx(x));
+    if (tr.some((x) => x != null)) return parts.map((x, i) => tr[i] == null ? x : tr[i]).join(sep);
+  }
+  return trOpt(s);
+}
+function trText(n) {
+  const v = n.data, rec = TO.get(n);
+  if (rec && rec.ar === v) { if (L.lang !== "ar") { n.data = rec.en; TO.delete(n); } return; }
+  if (L.lang !== "ar") return;
+  const m = v.match(/^(\s*)([\s\S]*?)(\s*)$/); if (!m[2]) return;
+  const t = tx(m[2]); if (t == null) return;
+  const ar = m[1] + t + m[3]; TO.set(n, { en: v, ar }); n.data = ar;
+}
+function trAttr(el, a) {
+  const v = el.getAttribute(a); if (v == null) return;
+  const o = el.__qo || (el.__qo = {}), rec = o[a];
+  if (rec && rec.ar === v) { if (L.lang !== "ar") { el.setAttribute(a, rec.en); delete o[a]; } return; }
+  if (L.lang !== "ar" || !v.trim()) return;
+  const t = tx(v.trim(), true); if (t == null) return;
+  o[a] = { en: v, ar: t }; el.setAttribute(a, t);
+}
+function trTree(root) {
+  if (root.nodeType === 3) { trText(root); return; }
+  if (root.nodeType !== 1) return;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+  let n = root;
+  do {
+    if (n.nodeType === 3) { if (!/^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.nodeName)) trText(n); }
+    else ATTRS.forEach((a) => { if (n.hasAttribute && n.hasAttribute(a)) trAttr(n, a); });
+  } while ((n = w.nextNode()));
+}
+function paintLangBtns() {
+  document.querySelectorAll("[data-lang-toggle]").forEach((b) => {
+    if (b.dataset.l === L.lang) return;
+    b.dataset.l = L.lang;
+    b.innerHTML = FLAGS[L.lang === "ar" ? "gb" : "sa"];
+    const lbl = L.lang === "ar" ? "Switch to English" : "التبديل إلى العربية";
+    b.setAttribute("aria-label", lbl); b.setAttribute("title", lbl);
+  });
+}
+const langMO = new MutationObserver((muts) => {
+  langMO.disconnect();
+  muts.forEach((m) => {
+    if (m.type === "childList") m.addedNodes.forEach(trTree);
+    else if (m.type === "characterData") trText(m.target);
+    else if (m.type === "attributes") trAttr(m.target, m.attributeName);
+  });
+  paintLangBtns();
+  langMO.observe(document.body, MO_OPTS);
+});
+const MO_OPTS = { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS };
+function applyLang(l) {
+  L.lang = l === "ar" ? "ar" : "en";
+  const h = document.documentElement;
+  h.setAttribute("lang", L.lang); h.setAttribute("dir", L.lang === "ar" ? "rtl" : "ltr");
+  try { localStorage.setItem("qpx-lang", L.lang); } catch (e) { /* storage unavailable */ }
+  langMO.disconnect();
+  trTree(document.body); paintLangBtns();
+  langMO.observe(document.body, MO_OPTS);
+  applyTheme(h.getAttribute("data-theme")); /* refreshes theme button labels in the new language */
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest && e.target.closest("[data-lang-toggle]");
+  if (b) applyLang(L.lang === "ar" ? "en" : "ar");
+});
+applyLang(L.lang);
 
 /* ===== 9. COMPONENTS ===== */
 function toast(msg, isError) {
@@ -925,13 +1468,14 @@ const Opts = {
   },
   names() {
     const o = this.data || this.normalize();
-    return this.uniq(Object.keys(o.taxonomy).concat(this.facets ? Array.from(this.facets.names) : []));
+    return this.uniq(Object.keys(o.taxonomy).concat(Object.keys(CAT_TAX), this.facets ? Array.from(this.facets.names) : []));
   },
   types(name) {
     const o = this.data || this.normalize(), f = this.facets;
-    if (name) return this.uniq(asArr(o.taxonomy[name]).concat(f && f.typesByName[name] ? Array.from(f.typesByName[name]) : []));
+    if (name) return this.uniq(asArr(o.taxonomy[name]).concat(CAT_TAX[name] || [], f && f.typesByName[name] ? Array.from(f.typesByName[name]) : []));
     let all = o.category.slice();
     Object.keys(o.taxonomy).forEach((k) => { all = all.concat(asArr(o.taxonomy[k])); });
+    Object.keys(CAT_TAX).forEach((k) => { all = all.concat(CAT_TAX[k]); });
     if (f) all = all.concat(Array.from(f.types));
     return this.uniq(all);
   }
@@ -1182,7 +1726,7 @@ function openFilterPicker(key) {
   const list = $("#fList", d);
   const draw = (t) => {
     t = (t || "").toLowerCase();
-    const items = opts.filter((o) => !t || String(o).toLowerCase().indexOf(t) >= 0);
+    const items = opts.filter((o) => !t || srchTxt(o).indexOf(t) >= 0);
     list.innerHTML = '<button data-v="">Any</button>' + items.map((o) => '<button data-v="' + esc(o) + '"' + (String(o) === String(cur) ? ' aria-current="true"' : "") + ">" + esc(o) + "</button>").join("") +
       (!items.length ? '<p class="muted" style="margin:12px 8px;font-size:14px">No options found</p>' : "");
   };
@@ -1643,6 +2187,50 @@ function openConsume(p) {
   });
 }
 
+/* ===== 13d-0. QUICK ADD: create a missing option right from the form (saved to the same lists the Settings page edits) ===== */
+const qaNorm = (s) => String(s == null ? "" : s).toLowerCase().replace(/[^a-z0-9]+/g, "");
+function qaLev(a, b) {
+  if (a === b) return 0; if (Math.abs(a.length - b.length) > 2) return 9;
+  let prev = []; for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) { const cur = [i]; for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = cur; }
+  return prev[b.length];
+}
+function qaNear(list, q) { /* "Did you mean": close spellings of what was typed */
+  const nq = qaNorm(q); if (nq.length < 3) return []; const lim = nq.length >= 6 ? 2 : 1;
+  return list.map((x) => ({ x, d: qaLev(qaNorm(x), nq) })).filter((o) => o.d <= lim).sort((a, b) => a.d - b.d).slice(0, 3).map((o) => o.x);
+}
+const qaClean = (s, numeric) => { const v = cleanVal(s); return !numeric && v && v === v.toLowerCase() ? v.charAt(0).toUpperCase() + v.slice(1) : v; };
+function qaHTML(spec, raw, all) { /* the pinned "+ Add" row (or a short hint) shown under the options */
+  if (!spec || !spec.add || (spec.can && !spec.can())) return "";
+  const need = spec.need ? spec.need() : "";
+  if (!raw) return need ? "" : '<button type="button" class="addrow" data-new>' + icon("plus", 16) + "<span>Add new " + esc(spec.noun) + "</span></button>";
+  if (all.some((x) => qaNorm(x) === qaNorm(raw))) return "";
+  if (need) return '<div class="none">' + esc(need) + "</div>";
+  if (spec.valid && !spec.valid(raw)) return '<div class="none">' + esc(spec.hint || "Not a valid value") + "</div>";
+  return '<button type="button" class="addrow" data-add>' + icon("plus", 16) + '<span>Add "' + esc(qaClean(raw, spec.numeric)) + '" as a new ' + esc(spec.noun) + "</span></button>";
+}
+let qaBusy = false;
+async function qaRun(spec, raw, all) { /* returns the value to select, or null when nothing was added */
+  if (qaBusy) return null;
+  const v = qaClean(raw, spec.numeric); if (!v) return null;
+  const hit = all.find((x) => qaNorm(x) === qaNorm(v));
+  if (hit) { toast("\"" + hit + "\" is already in the list - selected"); return hit; }
+  qaBusy = true;
+  try { if (!(await spec.add(v))) return null; } catch (e) { toast(errText(e), true); return null; } finally { qaBusy = false; }
+  toast("Added \"" + v + "\" to the " + spec.noun + " list");
+  return v;
+}
+async function qaAddDefOption(d, parent, v) { /* custom drop-down field: same storage as the Settings editor */
+  const cur = defOpts(d), key = d.depends_on ? parent : "__all__";
+  const next = Object.assign({}, cur, { [key]: asArr(cur[key]).concat([v]) });
+  const prev = d.options; d.options = next;
+  if (await saveDef(d)) return true;
+  d.options = prev; return false;
+}
+document.addEventListener("pointerdown", (e) => { /* tap outside closes any open picker list */
+  document.querySelectorAll(".pk .clist:not([hidden])").forEach((l) => { const w = l.parentElement; if (!w.contains(e.target)) w.dispatchEvent(new Event("pk-close")); });
+});
+
 /* ===== 13d. PART FORM (used by Add page and Edit dialog) ===== */
 function partForm(host, init, opt) {
   opt = opt || {};
@@ -1673,6 +2261,138 @@ function partForm(host, init, opt) {
   const showErr = (k, m) => { const e = host.querySelector('[data-err="' + k + '"]'), r = rowEl(k); if (e) e.textContent = m; if (r) r.classList.add("bad"); };
   const clearErr = (k) => { const e = host.querySelector('[data-err="' + k + '"]'), r = rowEl(k); if (e) e.textContent = ""; if (r) r.classList.remove("bad"); };
   const change = () => { if (opt.onChange) opt.onChange(F); };
+  /* ---- quick add: how a NEW value is stored for each field (the same lists the Settings page edits) ---- */
+  const od = () => Opts.data || o;
+  const SPEC = {
+    name:  { noun: "part name", add: (v) => taxEditor().addParent(v) },
+    type:  { noun: "part type", need: () => F.name ? "" : "Choose a part name first", add: (v) => taxEditor().addKid(F.name, v) },
+    make:  { noun: "make", add: (v) => makeEditor().addParent(v) },
+    model: { noun: "model", need: () => F.make ? "" : "Choose a make first", add: (v) => makeEditor().addKid(F.make, v) },
+    year:  { noun: "year", numeric: true, hint: "Enter a 4-digit year", can: () => od().year.length > 0, valid: (v) => /^\d{4}$/.test(v) && +v >= 1900 && +v <= new Date().getFullYear() + 2,
+             add: (v) => saveOpts({ year: od().year.map(Number).filter(isFinite).concat([Number(v)]).sort((a, b) => b - a) }) },
+    position:  { noun: "position", add: (v) => saveOpts({ position: od().position.concat([v]) }) },
+    direction: { noun: "direction", add: (v) => saveOpts({ direction: od().direction.concat([v]) }) }
+  };
+  /* ---- comfort on phones: lift the active field above the keyboard, and jump to the next field after a choice ---- */
+  const ORDER = ["name", "type", "make", "model", "year"];
+  let liftT1 = null, liftT2 = null;
+  function scroller(el) {
+    for (let n = el.parentElement; n && n !== document.body; n = n.parentElement) {
+      const oy = getComputedStyle(n).overflowY;
+      if ((oy === "auto" || oy === "scroll") && n.scrollHeight > n.clientHeight + 4) return n;
+    }
+    return null;
+  }
+  function lift(anchor, list) {
+    if (!anchor || window.innerWidth >= 1024) return;
+    document.body.classList.add("lifting");
+    const go = () => {
+      const sc = scroller(anchor), vv = window.visualViewport, vh = vv ? vv.height : window.innerHeight;
+      const hd = document.querySelector(".mhead"), topEdge = sc ? sc.getBoundingClientRect().top + 8 : (hd ? hd.getBoundingClientRect().bottom : 56) + 8;
+      const r = anchor.getBoundingClientRect(), dy = r.top - topEdge;
+      if (Math.abs(dy) > 6) { if (sc) sc.scrollBy({ top: dy, behavior: "smooth" }); else window.scrollBy({ top: dy, behavior: "smooth" }); }
+      if (list && list.parentNode) {
+        const cb = list.parentNode.getBoundingClientRect(), fieldBottom = topEdge + (cb.bottom - r.top);
+        list.style.maxHeight = Math.max(120, Math.min(320, vh - fieldBottom - 12)) + "px";
+      }
+    };
+    clearTimeout(liftT1); clearTimeout(liftT2);
+    liftT1 = setTimeout(go, 60); liftT2 = setTimeout(go, 400);
+  }
+  host.addEventListener("focusin", (e) => {
+    const t = e.target; if (!t.matches || !t.matches("input:not([type=file]):not([type=hidden]), textarea")) return;
+    const cb = t.closest(".combo"); lift(t.closest(".frow") || t, cb ? cb.querySelector(".clist") : null);
+  });
+  host.addEventListener("focusout", () => setTimeout(() => { if (!host.contains(document.activeElement)) document.body.classList.remove("lifting"); }, 250));
+  function focusNext(fromKey) {
+    if (opt.edit) return false;
+    const i = ORDER.indexOf(fromKey); if (i < 0) return false;
+    for (let j = i + 1; j < ORDER.length; j++) {
+      const k = ORDER[j], el = sel(k), r = rowEl(k);
+      if (!el || el.disabled || (r && r.hidden) || el.value || el.options.length < 2) continue;
+      const inp = el.nextElementSibling && el.nextElementSibling.querySelector && el.nextElementSibling.querySelector("input");
+      if (inp && !inp.disabled) { inp.focus(); return true; }
+    }
+    return false;
+  }
+  /* Turns a native <select> into a searchable list with a pinned "+ Add" row. The <select> stays in the page (hidden) and keeps the value, so the rest of the form is unchanged. */
+  function enhance(selEl, spec, after) {
+    if (!selEl || selEl.dataset.enh) return; selEl.dataset.enh = "1";
+    const wrap = document.createElement("div"); wrap.className = "combo pk";
+    wrap.innerHTML = '<input class="field" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" role="combobox" aria-expanded="false"><span class="pk-chev" aria-hidden="true">' + icon("chevd", 18) + '</span><div class="clist" hidden></div>';
+    selEl.after(wrap); selEl.classList.add("pk-native"); selEl.tabIndex = -1; selEl.setAttribute("aria-hidden", "true");
+    const inp = wrap.querySelector("input"), list = wrap.querySelector(".clist");
+    let touched = false, adding = false;
+    const opts = () => Array.from(selEl.options).filter((x) => x.value !== "").map((x) => ({ v: x.value, t: x.textContent }));
+    const label = () => { const x = selEl.options[selEl.selectedIndex]; return x && x.value !== "" ? x.textContent : ""; };
+    const sync = () => {
+      if (!touched && !adding) inp.value = label();
+      const first = selEl.options[0];
+      inp.placeholder = adding ? "Type the new " + spec.noun : (first && first.value === "" ? first.textContent : "Select");
+      inp.disabled = selEl.disabled; wrap.classList.toggle("dis", selEl.disabled);
+      inp.setAttribute("inputmode", adding || opts().length >= 8 ? "text" : "none"); /* short lists: no keyboard pops up; long lists: type to find */
+    };
+    const render = () => {
+      const raw = touched || adding ? cleanVal(inp.value) : "", q = raw.toLowerCase(), all = opts();
+      const hit = q ? all.filter((x) => x.t.toLowerCase().indexOf(q) >= 0).sort((a, b) => (a.t.toLowerCase().indexOf(q) === 0 ? 0 : 1) - (b.t.toLowerCase().indexOf(q) === 0 ? 0 : 1) || a.t.localeCompare(b.t)) : all;
+      let h = hit.slice(0, 80).map((x) => '<button type="button" role="option" data-v="' + esc(x.v) + '"' + (x.v === selEl.value ? ' class="on"' : "") + ">" + esc(x.t) + "</button>").join("");
+      if (q && !hit.length) {
+        const nr = qaNear(all.map((x) => x.t), raw);
+        if (nr.length) h += '<div class="none">Did you mean</div>' + nr.map((n) => '<button type="button" role="option" data-v="' + esc(all.find((y) => y.t === n).v) + '">' + esc(n) + "</button>").join("");
+        else if (!spec.add || (spec.can && !spec.can())) h += '<div class="none">No match</div>';
+      }
+      h += qaHTML(spec, raw, all.map((x) => x.t));
+      list.innerHTML = h || '<div class="none">No options yet</div>';
+    };
+    const open = () => { if (selEl.disabled) return; render(); list.hidden = false; wrap.setAttribute("aria-expanded", "true"); inp.setAttribute("aria-expanded", "true"); lift(wrap.closest(".frow") || wrap, list); };
+    const close = () => { list.hidden = true; wrap.setAttribute("aria-expanded", "false"); inp.setAttribute("aria-expanded", "false"); touched = false; adding = false; sync(); };
+    const pick = (v) => { selEl.value = v; selEl.dispatchEvent(new Event("change", { bubbles: true })); close(); inp.blur(); Promise.resolve().then(() => focusNext(selEl.dataset.k)); };
+    inp.addEventListener("focus", () => { if (!adding) inp.select(); if (list.hidden) open(); });
+    inp.addEventListener("click", () => { if (list.hidden) open(); });
+    inp.addEventListener("input", () => { touched = true; render(); list.hidden = false; });
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { close(); inp.blur(); }
+      else if (e.key === "Enter") {
+        e.preventDefault(); const raw = cleanVal(inp.value); if (!raw) return;
+        const ex = opts().find((x) => qaNorm(x.t) === qaNorm(raw)), b = list.querySelector("[data-v]");
+        if (ex) pick(ex.v); else if (b) pick(b.dataset.v);
+      }
+    });
+    list.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) e.preventDefault(); }); /* keep the focus in the field while tapping a row */
+    list.addEventListener("click", async (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.v !== undefined) return pick(b.dataset.v);
+      if (b.hasAttribute("data-new")) { adding = true; touched = false; inp.value = ""; sync(); inp.blur(); inp.focus(); render(); return; }
+      if (b.hasAttribute("data-add")) {
+        b.disabled = true; b.querySelector("span").textContent = "Adding...";
+        const v = await qaRun(spec, inp.value, opts().map((x) => x.t));
+        if (v == null) { render(); return; }
+        close(); inp.blur(); await after(v); focusNext(selEl.dataset.k);
+      }
+    });
+    selEl.addEventListener("change", sync);
+    wrap.addEventListener("pk-close", close);
+    wrap.addEventListener("focusout", () => setTimeout(() => { if (!adding && !wrap.contains(document.activeElement)) close(); }, 0));
+    new MutationObserver(sync).observe(selEl, { childList: true, attributes: true, attributeFilter: ["disabled"] });
+    sync();
+  }
+  const afterCore = (k) => async (v) => { refreshLists(); const el = sel(k); el.value = v; el.dispatchEvent(new Event("change", { bubbles: true })); };
+  function enhanceCore() {
+    ["type", "make", "model", "year"].forEach((k) => enhance(sel(k), SPEC[k], afterCore(k)));
+    ["position", "direction"].forEach((k) => { const el = sel(k); if (el && el.tagName === "SELECT") enhance(el, SPEC[k], afterCore(k)); });
+  }
+  function enhanceCustom() {
+    Opts.visibleDefs().forEach((d) => {
+      if (String(d.field_type || "dropdown").toLowerCase() !== "dropdown") return;
+      const k = String(d.id), el = host.querySelector('select[data-cf="' + k.replace(/"/g, "") + '"]'); if (!el) return;
+      const dep = d.depends_on;
+      enhance(el, {
+        noun: d.label.toLowerCase(),
+        need: () => dep === "vehicle" && !F.make ? "Choose a make first" : dep === "category" && !F.type ? "Choose a part type first" : "",
+        add: (v) => qaAddDefOption(d, dep === "vehicle" ? F.make : dep === "category" ? F.type : "", v)
+      }, async (v) => { F.custom[k] = v; renderCustom(); });
+    });
+  }
   function fill(k, list, val, ph) {
     const el = sel(k); if (!el) return;
     const l = list.map(String);
@@ -1697,6 +2417,7 @@ function partForm(host, init, opt) {
       } else inner = '<input class="field" data-cf="' + esc(k) + '" type="' + (ft === "number" ? "number" : "text") + '"' + (ft === "number" ? ' inputmode="decimal" step="any"' : "") + ' value="' + esc(v) + '" autocomplete="off">';
       return '<div class="frow" data-cfrow="' + esc(k) + '"><label>' + lab + "</label>" + inner + '<div class="err"></div></div>';
     }).join("");
+    enhanceCustom();
   }
   function drawPhotos() {
     sel("photos").innerHTML = F.photos.map((p, i) => '<div class="pt"><img src="' + esc(p.src) + '" alt="Photo ' + (i + 1) + '">' +
@@ -1710,6 +2431,7 @@ function partForm(host, init, opt) {
     fillType();
     ["position", "direction"].forEach((k) => { const el = sel(k); if (el && el.tagName === "SELECT") fill(k, o[k], F[k], "Select"); });
     renderCustom();
+    enhanceCore();
   }
   function paintAll() {
     sel("barcode").value = F.barcode; sel("nameIn").value = F.name; sel("qty").value = F.quantity;
@@ -1722,16 +2444,19 @@ function partForm(host, init, opt) {
   function showNames() {
     const q = nameIn.value.trim().toLowerCase(), all = Opts.names();
     let names = all.slice(); if (legacyName && names.indexOf(legacyName) < 0) names.unshift(legacyName);
-    const hit = names.filter((n) => !q || n.toLowerCase().indexOf(q) >= 0).slice(0, 60);
-    nameList.innerHTML = hit.length ? hit.map((n) => '<button type="button" data-pick="' + esc(n) + '">' + esc(n) + (all.indexOf(n) < 0 ? ' <span class="muted">(legacy)</span>' : "") + "</button>").join("") :
-      '<div class="none">' + (names.length ? "No match" : "No part names yet. Run 05_taxonomy_and_seed.sql") + "</div>";
+    const hit = names.filter((n) => !q || srchTxt(n).indexOf(q) >= 0).slice(0, 60);
+    let extra = "";
+    if (!hit.length && q) { const nr = qaNear(names, nameIn.value); if (nr.length) extra = '<div class="none">Did you mean</div>' + nr.map((n) => '<button type="button" data-pick="' + esc(n) + '">' + esc(n) + "</button>").join(""); }
+    nameList.innerHTML = (hit.length ? hit.map((n) => '<button type="button" data-pick="' + esc(n) + '">' + esc(n) + (all.indexOf(n) < 0 ? ' <span class="muted">(legacy)</span>' : "") + "</button>").join("") :
+      '<div class="none">' + (names.length ? "No match" : "No part names yet - add the first one below") + "</div>") + extra + qaHTML(SPEC.name, cleanVal(nameIn.value), names);
     nameList.hidden = false; nameIn.setAttribute("aria-expanded", "true");
   }
   function hideNames() { nameList.hidden = true; nameIn.setAttribute("aria-expanded", "false"); }
-  function pickName(n) {
+  function pickName(n, adv) {
     const prev = F.name; F.name = n; nameIn.value = n; hideNames(); clearErr("name");
     if (n !== prev) { const l = Opts.types(n); if (F.type && l.length && l.indexOf(F.type) < 0) F.type = ""; renderCustom(); }
     fillType(); change();
+    if (adv) Promise.resolve().then(() => focusNext("name"));
   }
   nameIn.addEventListener("focus", showNames);
   nameIn.addEventListener("input", showNames);
@@ -1742,7 +2467,16 @@ function partForm(host, init, opt) {
     const names = Opts.names().concat(legacyName ? [legacyName] : []), m = names.find((n) => n.toLowerCase() === v.toLowerCase());
     if (m) pickName(m); else nameIn.value = F.name;
   }, 150));
-  nameList.addEventListener("mousedown", (e) => { e.preventDefault(); const b = e.target.closest("[data-pick]"); if (b) pickName(b.dataset.pick); });
+  nameList.addEventListener("mousedown", async (e) => {
+    e.preventDefault(); const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.pick !== undefined) pickName(b.dataset.pick, true);
+    else if (b.hasAttribute("data-new")) { nameIn.value = ""; nameIn.placeholder = "Type the new part name"; showNames(); }
+    else if (b.hasAttribute("data-add")) {
+      b.disabled = true; b.querySelector("span").textContent = "Adding...";
+      const v = await qaRun(SPEC.name, nameIn.value, Opts.names().concat(legacyName ? [legacyName] : []));
+      if (v == null) showNames(); else { nameIn.placeholder = "Search part name"; pickName(v, true); }
+    }
+  });
   const setQty = (n) => { F.quantity = Math.max(0, Math.min(999999, n)); sel("qty").value = F.quantity; clearErr("qty"); };
   function onField(e) {
     const el = e.target.closest("[data-k],[data-cf]"); if (!el) return;
@@ -1797,7 +2531,7 @@ function partForm(host, init, opt) {
       host.querySelectorAll(".frow.bad").forEach((r) => r.classList.remove("bad"));
       host.querySelectorAll(".err").forEach((e) => { e.textContent = ""; });
       let first = null; const bad = (el) => { if (el) { el.classList.add("bad"); if (!first) first = el; } };
-      if (!F.name.trim()) { showErr("name", "Choose a part name from the list"); bad(rowEl("name")); }
+      if (!F.name.trim()) { showErr("name", "Choose a part name from the list, or add it with + Add"); bad(rowEl("name")); }
       if (!(F.quantity >= (opt.edit ? 0 : 1))) { showErr("qty", opt.edit ? "Enter a quantity" : "Quantity must be at least 1"); bad(rowEl("qty")); }
       Opts.visibleDefs().forEach((d) => {
         if (!d.required) return;
@@ -1999,7 +2733,7 @@ async function fetchAll(make) {
   for (let a = 0; a < 50000; a += 1000) { const r = await make(a, a + 999); if (r.error) throw r.error; out = out.concat(r.data || []); if (!r.data || r.data.length < 1000) break; }
   return out;
 }
-const fmtWhen = (s) => { const d = new Date(s); return isNaN(d) ? "" : d.toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }); };
+const fmtWhen = (s) => { const d = new Date(s); return isNaN(d) ? "" : d.toLocaleString(dloc(), { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }); };
 /* Recent activity row: part photo, swipe-able details, fixed +/- quantity badge (like the old site) */
 function actRowHTML(t, p) {
   const add = t.type === "add", q = Number(t.qty) || 0;
@@ -2090,7 +2824,7 @@ function renderHome(view) {
   const hr = new Date().getHours(), greet = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
   const sk = '<div class="tile"><div class="tl">' + skeleton(14, "60%") + '</div><div style="height:8px"></div>' + skeleton(28, "40%") + "</div>";
   view.innerHTML = '<div class="hhead"><h1>' + greet + ", " + esc(state.user ? state.user.username : "") + "</h1><p class=\"muted\">" +
-    new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + "</p></div>" +
+    new Date().toLocaleDateString(dloc(), { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + "</p></div>" +
     '<div class="qa"><a class="qa-i" href="#/add">' + icon("plus") + "<span>Add Part</span></a>" +
     '<button class="qa-i" id="qaConsume">' + icon("minus") + "<span>Consume Part</span></button>" +
     '<a class="qa-i" href="#/parts">' + icon("search") + "<span>Search Parts</span></a>" +
@@ -2255,7 +2989,7 @@ async function renderReports(view) {
   view.innerHTML = '<div class="phead"><div><h1 class="mo">Reports</h1><p>Added and consumed stock for a period.</p></div></div>' +
     '<div class="card noprint"><div class="rf"><div><label for="rpFrom">From</label><input class="field" id="rpFrom" type="date"></div><div><label for="rpTo">To</label><input class="field" id="rpTo" type="date"></div>' +
     '<div id="rpMakeH"></div><div id="rpTypeH"></div></div>' +
-    '<div class="rbtns"><button class="btn" data-sc="1">Today</button><button class="btn" data-sc="7">Last 7 days</button><button class="btn" data-sc="30">Last 30 days</button><span class="sp"></span>' +
+    '<div class="rbtns">' +
     '<button class="btn" id="rpCsv">' + icon("download") + 'Export</button><button class="btn" id="rpPrint">' + icon("print") + 'Print</button><button class="btn primary" id="rpRun">Run Report</button></div></div>' +
     '<div id="rpOut"></div>';
   const fillSel = () => {
@@ -2267,10 +3001,6 @@ async function renderReports(view) {
   $("#rpOut").innerHTML = emptyState("reports", "No report yet", "Choose a period and filters, then click Run Report");
   fillSel();
   Opts.load().then(() => { fillSel(); return Opts.loadFacets(); }).then(fillSel);
-  view.querySelectorAll("[data-sc]").forEach((b) => b.addEventListener("click", () => {
-    const to = new Date(), from = new Date(); from.setDate(from.getDate() - (Number(b.dataset.sc) - 1));
-    $("#rpFrom").value = dayKey(from); $("#rpTo").value = dayKey(to); runReport();
-  }));
   $("#rpRun").addEventListener("click", runReport);
   $("#rpCsv").addEventListener("click", openExportDialog);
   $("#rpPrint").addEventListener("click", () => { if (!REP.data) { toast("Run the report first, then print.", true); return; } window.print(); });
@@ -2314,7 +3044,7 @@ function paintReport() {
   const d = REP.data, out = $("#rpOut"); if (!d || !out) return;
   const period = (d.from || "Start") + " to " + (d.to || "Today"), filt = [d.make, d.type].filter(Boolean).join(" / ");
   const box = (l, v) => '<div class="tile sbox"><div class="tl">' + l + '</div><div class="tv">' + fmtNum(v) + "</div></div>";
-  out.innerHTML = '<div class="printonly"><h1>Quality Part X - Inventory report</h1><div>Period: ' + esc(period) + (filt ? " | " + esc(filt) : "") + " | Printed " + esc(new Date().toLocaleString("en-GB")) + "</div></div>" +
+  out.innerHTML = '<div class="printonly"><h1>Quality Part X - Inventory report</h1><div>Period: ' + esc(period) + (filt ? " | " + esc(filt) : "") + " | Printed " + esc(new Date().toLocaleString(dloc())) + "</div></div>" +
     '<div class="sums">' + box("Part Types", d.sum.types) + box("Total Current Units", d.sum.units) + box("Added in Period", d.sum.added) + box("Consumed in Period", d.sum.consumed) + "</div>" +
     '<p class="rlabel noprint">' + esc(period) + (filt ? " | " + esc(filt) : "") + " | " + fmtNum(d.rows.length) + " rows</p>" +
     (d.rows.length ? '<div class="card tblwrap"><table class="tbl"><thead><tr><th>Part</th><th>Type</th><th>Vehicle</th><th class="n">Added</th><th class="n">Consumed</th><th class="n">Current Stock</th></tr></thead><tbody>' +
@@ -2744,13 +3474,14 @@ function drawSettings(view) {
   const defs = Opts.defs.slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   const row = (id, title, sub, lockHtml) => '<details class="srow" data-r="' + esc(id) + '"' + (SET.open.has(id) ? " open" : "") + '><summary><span class="ch">' + icon("chevr") + '</span><span class="st"><b>' + esc(title) + "</b><i>" + esc(sub) + "</i></span>" + lockHtml + '</summary><div class="sbody"></div></details>';
   const lock = '<span class="lk" title="Core field - cannot be deleted" role="img" aria-label="Locked">' + icon("lock") + "</span>";
-  view.innerHTML = '<div class="phead"><div><h1 class="mo">Settings</h1><p>Form fields and the lists behind them.</p></div><div class="sact" style="margin:0"><button class="btn" id="stImp">' + icon("upload") + 'Import CSV</button><button class="btn primary" id="stAdd">' + icon("plus") + "Add field</button></div></div>" +
+  view.innerHTML = '<div class="phead"><div><h1 class="mo">Settings</h1><p>Form fields and the lists behind them.</p></div><div class="sact" style="margin:0"><button class="btn" id="stTr">Untranslated options</button><button class="btn" id="stImp">' + icon("upload") + 'Import CSV</button><button class="btn primary" id="stAdd">' + icon("plus") + "Add field</button></div></div>" +
     '<div class="card setlist" id="stList">' + CORE_FIELDS.map((f) => row(f.k, FL(f.k, f.d), (Opts.data.labels && Opts.data.labels[f.k] ? "Renamed from " + f.d + " - " : "") + f.sub, lock)).join("") +
     defs.map((x) => row(x.id, x.label, defType(x).replace(/^./, (c) => c.toUpperCase()) + (x.depends_on ? " - depends on " + (x.depends_on === "vehicle" ? FL("make", "Make") : FL("type", "Part type")) : "") + (x.required ? " - required" : ""),
       (x.is_hidden ? '<span class="chip low">Hidden</span>' : "") + '<button class="lk icon-btn" data-del="' + esc(x.id) + '" aria-label="Delete ' + esc(x.label) + '"' + (x.is_hidden ? " hidden" : "") + ">" + icon("trash") + "</button>")).join("") + "</div>";
   const again = () => { SET.tok++; drawSettings($("#view")); };
   $("#stAdd").addEventListener("click", () => openAddField(again));
   $("#stImp").addEventListener("click", () => openImportCSV(again));
+  $("#stTr").addEventListener("click", openUntranslated);
   const fill = (el) => {
     const id = el.dataset.r, body = $(".sbody", el), core = CORE_FIELDS.find((f) => f.k === id), def = core ? null : Opts.defs.find((x) => x.id === id); if (!core && !def) return;
     const acts = '<div class="sact"><button class="btn" data-rn>' + icon("pencil", 18) + "Rename</button>" + (core && Opts.data.labels && Opts.data.labels[id] ? '<button class="btn" data-rs>Reset name</button>' : "") +
@@ -2957,7 +3688,7 @@ function showLogin(message) {
     '<label class="auth-slot"><input inputmode="numeric" pattern="[0-9]*" maxlength="1"' + s[1] + ' data-auth-i="' + i + '" aria-label="' + s[0] + ' digit"><span class="auth-slot__win">' +
     '<svg class="auth-slot__spark" viewBox="0 0 66 74"><rect x="2" y="2" width="62" height="70" rx="14" pathLength="1"/></svg></span></label>').join("");
   $("#login").innerHTML =
-    '<section class="auth-screen"><button type="button" class="auth-theme-toggle" data-theme-toggle aria-label="Toggle theme"></button>' +
+    '<section class="auth-screen"><button type="button" class="auth-theme-toggle" data-theme-toggle aria-label="Toggle theme"></button><button type="button" class="auth-theme-toggle auth-lang-toggle" data-lang-toggle></button>' +
     '<div class="auth-page"><div class="auth-copy"><div class="auth-brand"><span class="auth-mark">' + icon("parts") + '</span>' +
     '<div class="auth-brand-text"><b>Quality Part X</b><span class="auth-brand-subtitle">Part\'s-app</span></div></div>' +
     '<div class="auth-copy-content"><h2>Keep every part<br>within reach.</h2><p>Sign in to manage stock, track activity, and keep your warehouse moving with confidence.</p></div></div>' +
