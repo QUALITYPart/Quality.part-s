@@ -276,6 +276,7 @@ body.guest .offline { inset:0 0 auto 0; }
 .pcard .info { display:flex; align-items:flex-start; gap:8px; padding:9px 12px; }
 .pcard .txt { flex:1; min-width:0; }
 .pcard .nm { font-size:16px; line-height:22px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pcard .nm .ty { font-weight:400; color:var(--muted); }
 .pcard .sm { font-size:14px; line-height:20px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .pcard .acts { flex:none; display:flex; flex-direction:column; gap:8px; }
 .pcard .edit, .pcard .del { position:relative; flex:none; width:28px; height:28px; border-radius:9999px; border:1px solid var(--border); background:var(--surface);
@@ -1512,14 +1513,14 @@ function photoArea(p, small) {
 function cardHTML(p, opts) {
   opts = opts || {};
   PARTS.set(p.id, p);
-  const sum = partSummary(p), veh = [p.make, p.model, p.year].filter(Boolean).join(" ");
+  const sum = partSummary(p), ttl = p.name + (p.type ? " - " + p.type : "");
   let h = '<article class="pcard' + (opts.small ? " small" : "") + '" data-id="' + esc(p.id) + '" data-i="0">' + photoArea(p, opts.small) +
-    '<div class="info"><div class="txt"><div class="nm" title="' + esc(p.name) + '">' + esc(p.name) + '</div>' +
-    (opts.small ? '<div class="sm" title="' + esc(sum) + '">' + esc(sum || " ") + "</div>" : '<div class="veh" title="' + esc(veh) + '">' + esc(veh || " ") + "</div>") + "</div>" +
+    '<div class="info"><div class="txt"><div class="nm" title="' + esc(ttl) + '">' + esc(p.name) + (p.type ? ' <span class="ty">- ' + esc(p.type) + "</span>" : "") + '</div>' +
+    (opts.small ? '<div class="sm" title="' + esc(sum) + '">' + esc(sum || " ") + "</div>" : '<div class="veh" title="' + esc(sum) + '">' + esc(sum || " ") + "</div>") + "</div>" +
     (opts.small ? "" : '<div class="acts"><button class="edit" data-act="edit" aria-label="Edit part">' + icon("pencil", 14) + '</button><button class="del" data-act="delete" aria-label="Delete part">' + icon("trash", 14) + "</button></div>") + "</div>";
   if (!opts.small) {
-    const rows = [["Quantity", fmtNum(p.quantity)], ["Position", p.position], ["Direction", p.direction], ["Location", p.location]];
-    let dl = rows.filter((r) => r[1] !== "").map((r) => "<div><dt>" + r[0] + "</dt><dd>" + esc(r[1]) + "</dd></div>").join("");
+    const rows = [["Part type", p.type], ["Make", p.make], ["Model", p.model], ["Year", p.year || ""], ["Quantity", fmtNum(p.quantity)], ["Position", p.position], ["Direction", p.direction], ["Location", p.location], ["Barcode", p.barcode]];
+    let dl = rows.filter((r) => r[1] !== "" && r[1] != null).map((r) => "<div><dt>" + r[0] + "</dt><dd>" + esc(r[1]) + "</dd></div>").join("");
     if (p.notes) dl += '<div class="full"><dt>Notes</dt><dd>' + esc(p.notes) + "</dd></div>";
     customRows(p).forEach((c) => { dl += "<div><dt>" + esc(c.label) + "</dt><dd>" + esc(c.value) + "</dd></div>"; });
     h += '<button class="xp" data-act="expand" aria-expanded="false" aria-label="Show details">' + icon("chevd") + "</button>" +
@@ -1607,7 +1608,7 @@ function hideTip() {
 function showTip(card) {
   const p = PARTS.get(card.dataset.id);
   if (!p || !card.isConnected || card.classList.contains("open") || card.closest(".pgrid.list") || $("#layer").firstChild) return;
-  const rows = [["Quantity", fmtNum(p.quantity)], ["Make", p.make], ["Model", p.model], ["Year", p.year || ""], ["Position", p.position], ["Direction", p.direction],
+  const rows = [["Part type", p.type], ["Quantity", fmtNum(p.quantity)], ["Make", p.make], ["Model", p.model], ["Year", p.year || ""], ["Position", p.position], ["Direction", p.direction],
     ["Location", p.location], ["Barcode", p.barcode], ["Notes", p.notes]].concat(customRows(p).map((c) => [c.label, c.value]));
   const el = document.createElement("div"); el.className = "ctip"; el.setAttribute("role", "tooltip");
   el.innerHTML = '<div class="tn">' + esc(p.name) + "</div><dl>" + rows.filter((r) => r[1] !== "").map((r) => "<dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd>").join("") + "</dl>";
